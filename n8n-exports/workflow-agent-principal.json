@@ -10,7 +10,10 @@
       },
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
-      "position": [14992, 5504],
+      "position": [
+        14992,
+        5504
+      ],
       "id": "9fc8a5a9-d18c-496e-8992-d3f76e75ebd1",
       "name": "Webhook NeoTravel Lead",
       "webhookId": "neotravel-lead"
@@ -25,7 +28,10 @@
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.7,
-      "position": [15232, 5424],
+      "position": [
+        15232,
+        5424
+      ],
       "id": "88cab128-56d5-4be6-a478-2a8803bc8e0a",
       "name": "AI Agent"
     },
@@ -37,7 +43,10 @@
       },
       "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
       "typeVersion": 1.4,
-      "position": [15328, 5888],
+      "position": [
+        15328,
+        5888
+      ],
       "id": "68c6cf42-ea36-4dc0-9e77-c146061ff563",
       "name": "Simple Memory"
     },
@@ -149,7 +158,10 @@
       },
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
-      "position": [15584, 5600],
+      "position": [
+        15584,
+        5600
+      ],
       "id": "041f13d3-af8f-455d-a096-7e8927e1f2d5",
       "name": "Router Statut"
     },
@@ -160,7 +172,10 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [15792, 5504],
+      "position": [
+        15792,
+        5504
+      ],
       "id": "5a60895f-801b-4438-81a5-f3b850fb8802",
       "name": "Calculer devis"
     },
@@ -416,7 +431,10 @@
       },
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 2.1,
-      "position": [16032, 5504],
+      "position": [
+        16032,
+        5504
+      ],
       "id": "e6373594-9cbc-4e20-af05-2fbdab2dc20e",
       "name": "CRM Créer Demande",
       "credentials": {
@@ -555,7 +573,10 @@
       },
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 2.1,
-      "position": [16272, 5504],
+      "position": [
+        16272,
+        5504
+      ],
       "id": "33ead487-9040-4932-8108-cccbffa0ffb0",
       "name": "CRM Créer Devis",
       "credentials": {
@@ -575,7 +596,10 @@
       },
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
-      "position": [16512, 5504],
+      "position": [
+        16512,
+        5504
+      ],
       "id": "319dc9cc-54b3-40a0-b0b4-f566df5e4de4",
       "name": "Email Devis",
       "webhookId": "fd401e95-cdd6-463a-9b7e-5d1a25dacb44",
@@ -605,7 +629,9 @@
             "id": "={{ $node[\"CRM Créer Demande\"].json.id }}",
             "Statut": "Devis envoyé"
           },
-          "matchingColumns": ["id"],
+          "matchingColumns": [
+            "id"
+          ],
           "schema": [
             {
               "id": "id",
@@ -642,7 +668,10 @@
       },
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 2.1,
-      "position": [16752, 5504],
+      "position": [
+        16752,
+        5504
+      ],
       "id": "f5a762f7-200d-41a0-8d14-1f0a9659b60b",
       "name": "CRM Maj Statut Demande",
       "credentials": {
@@ -662,7 +691,10 @@
       },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [16992, 5376],
+      "position": [
+        16992,
+        5376
+      ],
       "id": "71745910-b964-4fb1-a2f0-11ececf9f962",
       "name": "Respond Succès"
     },
@@ -672,7 +704,10 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [16992, 5616],
+      "position": [
+        16992,
+        5616
+      ],
       "id": "ef2a9063-3492-45a9-8bb0-b958c696d232",
       "name": "Calcul Délai Relance"
     },
@@ -683,7 +718,10 @@
       },
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
-      "position": [17232, 5616],
+      "position": [
+        17232,
+        5616
+      ],
       "id": "b10f0919-94a5-4507-9b6d-95cd747a4b70",
       "name": "Attente Relance",
       "webhookId": "93b5fbb8-958f-4e3e-b57e-8cf694979bba"
@@ -698,7 +736,10 @@
       },
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
-      "position": [17472, 5616],
+      "position": [
+        17472,
+        5616
+      ],
       "id": "9255ee62-43a1-453b-856b-000e94edc435",
       "name": "Email Relance",
       "webhookId": "3ac8cf07-6e2b-46ed-b8ec-e1afb0ca98df",
@@ -717,7 +758,10 @@
       },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [15792, 5824],
+      "position": [
+        15792,
+        5824
+      ],
       "id": "0a2b2337-79e6-400f-bbea-4918898a85ec",
       "name": "Respond Incomplet"
     },
@@ -862,7 +906,10 @@
       },
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 2.1,
-      "position": [15792, 6096],
+      "position": [
+        15792,
+        6096
+      ],
       "id": "d1d6804f-e1df-4e45-a120-1c5a7b9e21d0",
       "name": "CRM Demande Complexe",
       "credentials": {
@@ -882,7 +929,10 @@
       },
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
-      "position": [16032, 6096],
+      "position": [
+        16032,
+        6096
+      ],
       "id": "72f472f9-e054-4abd-9027-14b1a0dbb140",
       "name": "Email Commercial",
       "webhookId": "ff5d29b3-1f9f-4e07-9143-55dedb3da040",
@@ -903,7 +953,10 @@
       },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [16272, 6096],
+      "position": [
+        16272,
+        6096
+      ],
       "id": "ec2314f5-6be8-4f04-a0d2-3c4beb9ce05a",
       "name": "Respond Cas Complexe"
     },
@@ -988,7 +1041,10 @@
       },
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 2.1,
-      "position": [15792, 6336],
+      "position": [
+        15792,
+        6336
+      ],
       "id": "a51a4d9d-c7ad-4e68-9c0e-574ebe4a1d8b",
       "name": "CRM Demande Incomplète Escalade",
       "credentials": {
@@ -1008,7 +1064,10 @@
       },
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
-      "position": [16032, 6336],
+      "position": [
+        16032,
+        6336
+      ],
       "id": "fe12133b-141d-4a6e-94fc-834753a4431c",
       "name": "Email Escalade Incomplet",
       "webhookId": "648e0c81-d0cf-4d49-9ab2-a8b206e8879a",
@@ -1029,7 +1088,10 @@
       },
       "type": "n8n-nodes-base.respondToWebhook",
       "typeVersion": 1.1,
-      "position": [16272, 6336],
+      "position": [
+        16272,
+        6336
+      ],
       "id": "54a4979b-441c-45a2-b504-f88ddc002555",
       "name": "Respond Incomplet Escalade"
     },
@@ -1039,7 +1101,10 @@
       },
       "type": "@n8n/n8n-nodes-langchain.lmChatVercelAiGateway",
       "typeVersion": 1,
-      "position": [15088, 5712],
+      "position": [
+        15088,
+        5712
+      ],
       "id": "7f32caec-a3a9-4022-b984-bc3af7af5e98",
       "name": "Vercel AI Gateway Chat Model",
       "credentials": {
@@ -1055,7 +1120,10 @@
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [15488, 5184],
+      "position": [
+        15488,
+        5184
+      ],
       "id": "27c7e012-b11a-4246-acca-fabbf58c70fb",
       "name": "Code"
     }
