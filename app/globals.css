@@ -1,26 +1,325 @@
 @import "tailwindcss";
 
+/* ============================================================
+   NeoTravel · Design system (DA "atelier/industriel")
+   Source : Direction Artistique / NeoTravel.dc.html
+   Accent #0bb99b + Navy #16233E · Archivo + JetBrains Mono
+   ============================================================ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #ffffff;
+  --surface: #f7f8fa;
+  --ink: #16233e;
+  --muted: #5a6678;
+  --bd: #16233e;
+  --line: #e2e5ea;
+  --field: #ffffff;
+  /* Constantes de marque (identiques en clair/sombre) */
+  --accent: #0bb99b;
+  --on-accent: #16233e;
+  --navy: #16233e;
+  --ok: #00853e;
+  --warn: #e6a700;
+  --danger: #e4002b;
+  /* Échelle de rayons (DA harmonisée : tout légèrement arrondi) */
+  --r-sm: 6px;
+  --r-md: 10px;
+  --r-lg: 18px;
+  /* Échelle typographique (consolidée — snap des valeurs ad-hoc) */
+  --text-2xs: 11px;
+  --text-xs: 12px;
+  --text-sm: 13px;
+  --text-base: 14px;
+  --text-md: 16px;
+  --text-lg: 18px;
+  --text-xl: 22px;
+  --text-2xl: 26px;
+  --text-3xl: 32px;
+  --text-4xl: 46px;
+  /* Échelle d'espacement (multiples de 4) */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+}
+
+html.dark {
+  --bg: #0d1320;
+  --surface: #131c2b;
+  --ink: #eaf0f8;
+  --muted: #93a2b8;
+  --bd: #3a4a66;
+  --line: #28344a;
+  --field: #131c2b;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-accent: var(--accent);
+  --color-navy: var(--navy);
+  --font-sans: var(--font-archivo);
+  --font-mono: var(--font-jetbrains);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-archivo), "Archivo", sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.nt-num {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Arrondi global des champs (les pilules du chat gardent leur radius inline) */
+input[type="text"],
+input[type="date"],
+input[type="number"],
+select,
+textarea {
+  border-radius: var(--r-sm);
+}
+
+/* Utilitaires de rayon (à poser sur les surfaces/cartes/boutons nets) */
+.nt-r-sm {
+  border-radius: var(--r-sm);
+}
+.nt-r-md {
+  border-radius: var(--r-md);
+}
+.nt-r-lg {
+  border-radius: var(--r-lg);
+}
+.nt-clip {
+  overflow: hidden;
+}
+
+/* ===== Système de boutons (primaire / secondaire / ghost) ========= */
+.nt-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font: inherit;
+  font-weight: 800;
+  font-size: var(--text-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  padding: 11px 18px;
+  border: 2px solid transparent;
+  border-radius: var(--r-sm);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: transform 0.14s ease, filter 0.14s ease, background 0.14s ease, color 0.14s ease;
+}
+.nt-button:hover {
+  filter: brightness(1.05);
+}
+.nt-button:active {
+  transform: translateY(1px);
+}
+.nt-button--primary {
+  background: var(--accent);
+  color: var(--navy);
+  border-color: var(--navy);
+}
+.nt-button--secondary {
+  background: var(--bg);
+  color: var(--ink);
+  border-color: var(--bd);
+}
+.nt-button--ghost {
+  background: transparent;
+  color: var(--ink);
+  border-color: transparent;
+  padding: 8px 10px;
+}
+.nt-button--ghost:hover {
+  filter: none;
+  color: var(--accent);
+}
+.nt-button--sm {
+  padding: 8px 14px;
+  font-size: var(--text-xs);
+}
+.nt-button--lg {
+  padding: 14px 24px;
+  font-size: var(--text-base);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: var(--muted);
+}
+
+/* Sliders ---------------------------------------------------- */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 6px;
+  border-radius: 0;
+  background: var(--line);
+  outline: none;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 24px;
+  height: 24px;
+  border-radius: 0;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid var(--bd);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 0;
+  background: var(--accent);
+  cursor: pointer;
+  border: 2px solid var(--bd);
+}
+
+/* Animations ------------------------------------------------- */
+@keyframes nt-blink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.25;
+  }
+}
+@keyframes nt-bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.4;
+  }
+  40% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
+}
+@keyframes nt-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media print {
+  .nt-noprint {
+    display: none !important;
+  }
+}
+
+/* ===== Animations (légères, pro, accessibles) ===================== */
+@keyframes nt-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes nt-msg-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes nt-bubble-in {
+  from { opacity: 0; transform: translateY(14px) scale(0.9); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes nt-pulse-ring {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(93, 208, 138, 0.5); }
+  70% { box-shadow: 0 0 0 6px rgba(93, 208, 138, 0); }
+}
+
+.nt-rise { animation: nt-rise 0.55s cubic-bezier(0.22, 0.61, 0.36, 1) both; }
+.nt-msg { animation: nt-msg-in 0.32s ease both; }
+.nt-pulse { animation: nt-pulse-ring 2.2s ease-out infinite; }
+
+.nt-bubble { animation: nt-bubble-in 0.4s cubic-bezier(0.22, 0.61, 0.36, 1) both; transition: transform 0.18s ease; }
+.nt-bubble:hover { transform: translateY(-2px); }
+
+.nt-card { transition: transform 0.2s ease, box-shadow 0.2s ease; }
+.nt-card:hover { transform: translateY(-3px); box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1); }
+
+.nt-btn { transition: transform 0.14s ease, opacity 0.14s ease, filter 0.14s ease; }
+.nt-btn:hover { filter: brightness(1.05); }
+.nt-btn:active { transform: translateY(1px) scale(0.99); }
+
+/* Popover assistant : ouverture / fermeture animées */
+.nt-pop {
+  opacity: 0;
+  transform: translateY(16px) scale(0.97);
+  transform-origin: bottom right;
+  pointer-events: none;
+  visibility: hidden;
+  transition: opacity 0.22s ease, transform 0.26s cubic-bezier(0.22, 0.61, 0.36, 1), visibility 0s linear 0.26s;
+}
+.nt-pop--open {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+  visibility: visible;
+  transition: opacity 0.22s ease, transform 0.26s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .nt-rise, .nt-msg, .nt-bubble, .nt-pulse { animation: none; }
+  .nt-card:hover, .nt-btn:active, .nt-bubble:hover { transform: none; }
+  .nt-pop, .nt-pop--open { transition: opacity 0.12s ease; transform: none; }
+}
+
+/* Conversation centrale de la landing : chat + panneau infos détectées */
+.nt-landing-chat {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: stretch;
+}
+@media (max-width: 880px) {
+  .nt-landing-chat {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Header responsive : la nav passe sur sa propre ligne sous le logo + actions */
+@media (max-width: 760px) {
+  .nt-header-inner {
+    flex-wrap: wrap;
+    row-gap: 10px;
+  }
+  .nt-nav {
+    order: 3;
+    flex-basis: 100%;
+    justify-content: center;
+    gap: 18px;
+  }
+}
+@media (max-width: 420px) {
+  .nt-cta-full {
+    font-size: 11.5px;
+    padding: 8px 12px;
+  }
 }
