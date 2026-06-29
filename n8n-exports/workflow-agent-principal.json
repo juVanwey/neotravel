@@ -12,9 +12,9 @@
       "typeVersion": 2,
       "position": [
         -496,
-        368
+        320
       ],
-      "id": "302c8cdb-9a82-4623-87fa-10f4c603a9fb",
+      "id": "bfcaf6e2-c0b5-4abc-82d9-66a4991eb151",
       "name": "Webhook NeoTravel Lead",
       "webhookId": "neotravel-lead"
     },
@@ -23,16 +23,16 @@
         "promptType": "define",
         "text": "=={{ $json.body.message }}",
         "options": {
-          "systemMessage": "RÈGLE CRITIQUE SUR LE FORMAT :\nTu ne retournes QU'UN SEUL objet JSON à la racine.\nJamais de JSON dans un champ message.\nJamais de texte en dehors du JSON.\nJamais de backticks markdown autour du JSON.\nSi tu dois escalader ET informer le prospect, mets le message au prospect dans le champ \"resume\" et retourne directement le JSON cas_complexe.\n\nAvant de poser une question, vérifie l'historique de la conversation. Ne redemande jamais une info déjà donnée par le prospect.\n\nTu es l'assistant commercial de NeoTravel, spécialiste du transport de groupe en autocar en France.\n\nTON OBJECTIF : collecter toutes les informations nécessaires pour établir un devis, en posant les questions naturellement, une par une. Tu ne passes à la question suivante que quand tu as une réponse claire.\n\nINFORMATIONS À COLLECTER (dans cet ordre) :\n1. nom et société du prospect + email + téléphone\n2. ville de départ et ville d'arrivée\n3. date de départ (et date de retour si aller/retour)\n4. nombre de passagers\n5. aller simple ou aller/retour\n6. distance en km — si le prospect ne la connaît pas, estime-la toi-même depuis les villes (ex: Lyon → Annecy ≈ 140km) et confirme-la au prospect\n\nCALCUL DU CODE URGENCE (automatique, ne pas demander au prospect) :\n- moins de 48h entre date_demande et date_depart → DD_PRIORITAIRE\n- entre 2 et 7 jours → DD_URGENT\n- entre 8 jours et 3 mois → DD_NORMAL\n- plus de 3 mois → DD_3MOISETPLUS\n\nRÈGLES ABSOLUES :\n- Tu poses UNE seule question à la fois\n- Tu reformules ce que tu as compris avant de passer à la suite\n- Tu ne calcules JAMAIS le prix toi-même\n- Tu réponds TOUJOURS en JSON valide brut, sans backticks, sans texte autour\n- La date_demande = aujourd'hui\n- Ne jamais inventer des données que le prospect n'a pas données\n\nFORMAT DE RÉPONSE JSON :\n\nSi informations manquantes :\n{\"statut\": \"incomplet\", \"champs_manquants\": [\"liste\"], \"message\": \"ta question naturelle au prospect\"}\n\nSi toutes les infos sont collectées :\n{\"statut\": \"complet\", \"donnees\": {\"nom_societe\": \"...\", \"email\": \"...\", \"telephone\": \"...\", \"ville_depart\": \"...\", \"ville_arrivee\": \"...\", \"date_depart\": \"YYYY-MM-DD\", \"date_demande\": \"YYYY-MM-DD\", \"nb_passagers\": 0, \"distance_km\": 0, \"aller_retour\": false, \"urgence\": \"DD_NORMAL\"}}\n\nSi cas complexe (automatisation impossible) :\n{\"statut\": \"cas_complexe\", \"raison\": \"explication courte\", \"resume\": \"résumé pour le commercial — Un conseiller NeoTravel vous recontacte sous 24h.\", \"donnees\": {\"nom_societe\": \"...\", \"email\": \"...\", \"telephone\": \"...\"}}\n\nSi prospect bloqué ou abandon :\n{\"statut\": \"cas_incomplet_escalade\", \"raison\": \"le prospect ne peut pas fournir les informations\", \"resume\": \"ce qui a été collecté jusqu'ici\", \"donnees\": {\"nom_societe\": \"...\", \"email\": \"...\", \"telephone\": \"...\"}}\n\nCAS D'ESCALADE OBLIGATOIRE (→ cas_complexe) :\n- Trajet international (hors France)\n- Demande de remise ou négociation de prix\n- Données contradictoires après 2 tentatives de clarification\n- Plus de 85 passagers\n\nIMPORTANT : avant d'escalader, tu dois TOUJOURS avoir collecté au minimum le nom/société et l'email du prospect.\nSi tu détectes un cas complexe mais que tu n'as pas encore ces infos, pose d'abord la question :\n\"Pour que notre conseiller puisse vous recontacter, pourriez-vous me donner votre nom, société et email ?\"\nSeulement ensuite tu retournes le JSON cas_complexe.\n\nCAS D'ESCALADE ABANDON (→ cas_incomplet_escalade) :\n- Le prospect dit \"je sais pas\", \"à voir\", \"pas sûr\" sur une info critique après 2 relances\n- Le prospect demande à parler à un humain\n\nERREURS À NE JAMAIS FAIRE :\n- Ne jamais mettre de JSON dans un champ message\n- Ne jamais entourer le JSON de backticks\n- Ne jamais considérer un trajet France métropolitaine comme international\n- Ne jamais escalader pour moins de 85 passagers si le trajet est standard\n- Ne jamais calculer un prix en dehors de l'outil calculer_devis()"
+          "systemMessage": "RÈGLE CRITIQUE SUR LE FORMAT :\nTu ne retournes QU'UN SEUL objet JSON à la racine.\nJamais de JSON dans un champ message.\nJamais de texte en dehors du JSON.\nJamais de backticks markdown autour du JSON.\nSi tu dois escalader ET informer le prospect, mets le message au prospect dans le champ \"resume\" et retourne directement le JSON cas_complexe.\n \nAvant de poser une question, vérifie l'historique de la conversation. Ne redemande jamais une info déjà donnée par le prospect.\n \nTu es l'assistant commercial de NeoTravel, spécialiste du transport de groupe en autocar en France.\n \nTON OBJECTIF : collecter toutes les informations nécessaires pour établir un devis, en posant les questions naturellement, une par une. Tu ne passes à la question suivante que quand tu as une réponse claire.\n \nINFORMATIONS À COLLECTER (dans cet ordre) :\n1. nom et société du prospect + email + téléphone\n2. ville de départ et ville d'arrivée\n3. date de départ (et date de retour si aller/retour)\n4. nombre de passagers\n5. aller simple ou aller/retour\n6. distance en km — si le prospect ne la connaît pas, estime-la toi-même depuis les villes (ex: Lyon → Annecy ≈ 140km) et confirme-la au prospect\n \nCALCUL DU CODE URGENCE (automatique, ne pas demander au prospect) :\n- moins de 48h entre date_demande et date_depart → DD_PRIORITAIRE\n- entre 2 et 7 jours → DD_URGENT\n- entre 8 jours et 3 mois → DD_NORMAL\n- plus de 3 mois → DD_3MOISETPLUS\n \nRÈGLES ABSOLUES :\n- Tu poses UNE seule question à la fois\n- Tu reformules ce que tu as compris avant de passer à la suite\n- Tu ne calcules JAMAIS le prix toi-même\n- Tu réponds TOUJOURS en JSON valide brut, sans backticks, sans texte autour\n- La date du jour est {{ $now.toISO().split('T')[0] }} — utilise cette date comme date_demande ET comme référence pour déduire l'année si le prospect ne la précise pas\n- Si le prospect dit \"15 juillet\" sans préciser l'année, utilise l'année {{ $now.year }} sauf si cette date est déjà passée, auquel cas utilise {{ $now.year + 1 }}\n- Ne jamais inventer des données que le prospect n'a pas données\n \nFORMAT DE RÉPONSE JSON :\n \nSi informations manquantes :\n{\"statut\": \"incomplet\", \"champs_manquants\": [\"liste\"], \"message\": \"ta question naturelle au prospect\"}\n \nSi toutes les infos sont collectées :\n{\"statut\": \"complet\", \"donnees\": {\"nom_societe\": \"...\", \"email\": \"...\", \"telephone\": \"...\", \"ville_depart\": \"...\", \"ville_arrivee\": \"...\", \"date_depart\": \"YYYY-MM-DD\", \"date_demande\": \"YYYY-MM-DD\", \"nb_passagers\": 0, \"distance_km\": 0, \"aller_retour\": false, \"urgence\": \"DD_NORMAL\"}}\n \nSi cas complexe (automatisation impossible) :\n{\"statut\": \"cas_complexe\", \"raison\": \"explication courte\", \"resume\": \"résumé pour le commercial — Un conseiller NeoTravel vous recontacte sous 24h.\", \"donnees\": {\"nom_societe\": \"...\", \"email\": \"...\", \"telephone\": \"...\"}}\n \nSi prospect bloqué ou abandon :\n{\"statut\": \"cas_incomplet_escalade\", \"raison\": \"le prospect ne peut pas fournir les informations\", \"resume\": \"ce qui a été collecté jusqu'ici\", \"donnees\": {\"nom_societe\": \"...\", \"email\": \"...\", \"telephone\": \"...\"}}\n \nCAS D'ESCALADE OBLIGATOIRE (→ cas_complexe) :\n- Trajet international (hors France)\n- Demande de remise ou négociation de prix\n- Données contradictoires après 2 tentatives de clarification\n- Plus de 85 passagers\n \nIMPORTANT : avant d'escalader, tu dois TOUJOURS avoir collecté au minimum le nom/société et l'email du prospect.\nSi tu détectes un cas complexe mais que tu n'as pas encore ces infos, pose d'abord la question :\n\"Pour que notre conseiller puisse vous recontacter, pourriez-vous me donner votre nom, société et email ?\"\nSeulement ensuite tu retournes le JSON cas_complexe.\n \nCAS D'ESCALADE ABANDON (→ cas_incomplet_escalade) :\n- Le prospect dit \"je sais pas\", \"à voir\", \"pas sûr\" sur une info critique après 2 relances\n- Le prospect demande à parler à un humain\n \nERREURS À NE JAMAIS FAIRE :\n- Ne jamais mettre de JSON dans un champ message\n- Ne jamais entourer le JSON de backticks\n- Ne jamais considérer un trajet France métropolitaine comme international\n- Ne jamais escalader pour moins de 85 passagers si le trajet est standard\n- Ne jamais calculer un prix en dehors de l'outil calculer_devis()"
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",
       "typeVersion": 1.7,
       "position": [
         -256,
-        288
+        240
       ],
-      "id": "afdf6dc8-b0f4-4d9d-8c81-f9fd17c9c071",
+      "id": "c7d8579b-c408-4c7e-821b-9da4a5330720",
       "name": "AI Agent"
     },
     {
@@ -45,9 +45,9 @@
       "typeVersion": 1.4,
       "position": [
         -160,
-        752
+        704
       ],
-      "id": "679e6775-c4e5-439c-ae29-e1666b2353c9",
+      "id": "b7370878-a351-4c88-ad25-f71ae7338328",
       "name": "Simple Memory"
     },
     {
@@ -160,9 +160,9 @@
       "typeVersion": 3.2,
       "position": [
         96,
-        464
+        416
       ],
-      "id": "06e9af86-0b18-44f9-9981-8624dfd58922",
+      "id": "85d9509d-3c56-4e74-a702-a4af1c9d786a",
       "name": "Router Statut"
     },
     {
@@ -174,9 +174,9 @@
       "typeVersion": 2,
       "position": [
         304,
-        368
+        320
       ],
-      "id": "b5c806c0-742f-4bc0-a00a-157a8779d43a",
+      "id": "84758f11-4b3f-468e-a7a6-8758d487da62",
       "name": "Calculer devis"
     },
     {
@@ -433,9 +433,9 @@
       "typeVersion": 2.1,
       "position": [
         544,
-        368
+        320
       ],
-      "id": "9173fa9c-3ca6-4c38-9f91-0e329517021b",
+      "id": "48fd3de2-d29f-455b-a403-5a2431f54651",
       "name": "CRM Créer Demande",
       "credentials": {
         "airtableTokenApi": {
@@ -610,9 +610,9 @@
       "typeVersion": 2.1,
       "position": [
         784,
-        368
+        320
       ],
-      "id": "3d8ea3cb-e705-40e0-8f8b-3840e8cceb53",
+      "id": "37af05ae-ab63-46d8-992f-540449c1c96d",
       "name": "CRM Créer Devis",
       "credentials": {
         "airtableTokenApi": {
@@ -635,9 +635,9 @@
       "typeVersion": 2.1,
       "position": [
         1232,
-        368
+        320
       ],
-      "id": "58739472-9712-41a2-95bf-f28ac3d3f6df",
+      "id": "bd8e24f5-ad91-4fa9-842e-157595e762c0",
       "name": "Email Devis",
       "webhookId": "fd401e95-cdd6-463a-9b7e-5d1a25dacb44",
       "credentials": {
@@ -707,9 +707,9 @@
       "typeVersion": 2.1,
       "position": [
         1472,
-        368
+        320
       ],
-      "id": "1baa78b0-94df-49f6-add0-ac72fb2540cc",
+      "id": "d4f35a51-a8b8-494e-8097-7ddf828a1145",
       "name": "CRM Maj Statut Demande",
       "credentials": {
         "airtableTokenApi": {
@@ -730,9 +730,9 @@
       "typeVersion": 1.1,
       "position": [
         1712,
-        240
+        192
       ],
-      "id": "32309801-dd52-4408-be38-cf840130c142",
+      "id": "5db12f54-dd8b-4043-ab4e-6264f2cfacd5",
       "name": "Respond Succès"
     },
     {
@@ -743,24 +743,10 @@
       "typeVersion": 2,
       "position": [
         1712,
-        480
+        432
       ],
-      "id": "c5296576-f1f9-4beb-80be-1768f1254d05",
+      "id": "6c76b7a2-de8c-4ef5-b6c4-5abd3bcac6ff",
       "name": "Calcul Délai Relance"
-    },
-    {
-      "parameters": {
-        "amount": "={{ $json.delai_jours }}"
-      },
-      "type": "n8n-nodes-base.wait",
-      "typeVersion": 1.1,
-      "position": [
-        1952,
-        480
-      ],
-      "id": "89f9470a-f312-40fe-8354-33dd30577739",
-      "name": "Attente Relance",
-      "webhookId": "93b5fbb8-958f-4e3e-b57e-8cf694979bba"
     },
     {
       "parameters": {
@@ -773,10 +759,10 @@
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
       "position": [
-        2400,
-        480
+        2816,
+        272
       ],
-      "id": "2c7901ba-dd61-4ca0-8565-3ecb06dcf78d",
+      "id": "3ed0da20-7ff0-49ea-87e5-8d9499c56041",
       "name": "Email Relance",
       "webhookId": "3ac8cf07-6e2b-46ed-b8ec-e1afb0ca98df",
       "credentials": {
@@ -796,9 +782,9 @@
       "typeVersion": 1.1,
       "position": [
         304,
-        688
+        640
       ],
-      "id": "4e5d2539-03a6-4ea0-9190-4baf98130ae3",
+      "id": "d7801d40-05a4-4772-905b-2366711e3caf",
       "name": "Respond Incomplet"
     },
     {
@@ -944,9 +930,9 @@
       "typeVersion": 2.1,
       "position": [
         304,
-        960
+        912
       ],
-      "id": "0d68d7c2-32e1-474e-a967-522c245bbf89",
+      "id": "9556a981-7831-4ecf-92f8-0a50c5f18a20",
       "name": "CRM Demande Complexe",
       "credentials": {
         "airtableTokenApi": {
@@ -967,9 +953,9 @@
       "typeVersion": 2.1,
       "position": [
         544,
-        960
+        912
       ],
-      "id": "4d76b6fc-50ea-48e9-84f2-4012b8244102",
+      "id": "75161695-444c-4b7c-8516-9d5bb5e90796",
       "name": "Email Commercial",
       "webhookId": "ff5d29b3-1f9f-4e07-9143-55dedb3da040",
       "credentials": {
@@ -991,9 +977,9 @@
       "typeVersion": 1.1,
       "position": [
         784,
-        960
+        912
       ],
-      "id": "0dbf9a40-8940-4e40-8cc2-63231a6c7f0a",
+      "id": "2fe935fe-4261-4628-ab61-75b9be6eba46",
       "name": "Respond Cas Complexe"
     },
     {
@@ -1079,9 +1065,9 @@
       "typeVersion": 2.1,
       "position": [
         304,
-        1200
+        1152
       ],
-      "id": "4378cb6f-4a6f-44ae-b9d8-1c8a33cfa54a",
+      "id": "4c4b57cc-6372-4b31-a612-c444b62a9d02",
       "name": "CRM Demande Incomplète Escalade",
       "credentials": {
         "airtableTokenApi": {
@@ -1102,9 +1088,9 @@
       "typeVersion": 2.1,
       "position": [
         544,
-        1200
+        1152
       ],
-      "id": "13f2cf21-ef2b-4c42-82c5-c7c9016923c0",
+      "id": "acf734de-3c43-4d1a-a951-d2d297e3326b",
       "name": "Email Escalade Incomplet",
       "webhookId": "648e0c81-d0cf-4d49-9ab2-a8b206e8879a",
       "credentials": {
@@ -1126,9 +1112,9 @@
       "typeVersion": 1.1,
       "position": [
         784,
-        1200
+        1152
       ],
-      "id": "0e8394c1-b050-4869-bc43-4bd6fe0f298a",
+      "id": "b16ecfe8-8a80-4076-87ee-a46ba88f2c1b",
       "name": "Respond Incomplet Escalade"
     },
     {
@@ -1139,9 +1125,9 @@
       "typeVersion": 1,
       "position": [
         -400,
-        576
+        528
       ],
-      "id": "9d6c34ef-d566-44ed-a164-b47c0ccb57e5",
+      "id": "ae1dc04f-0ddf-43c8-b9cb-a2943cda127a",
       "name": "Vercel AI Gateway Chat Model",
       "credentials": {
         "vercelAiGatewayApi": {
@@ -1152,15 +1138,15 @@
     },
     {
       "parameters": {
-        "jsCode": "const output = $json.output;\ntry {\n  const cleaned = output.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n  const parsed = JSON.parse(cleaned);\n  \n  // Force la date_demande à aujourd'hui côté système\n  if (parsed.donnees) {\n    parsed.donnees.date_demande = new Date().toISOString().split('T')[0];\n    \n    // Recalcule l'urgence avec la vraie date\n    if (parsed.donnees.date_depart) {\n      const depart = new Date(parsed.donnees.date_depart);\n      const demande = new Date();\n      const diffJours = Math.floor((depart - demande) / (1000 * 60 * 60 * 24));\n      \n      if (diffJours < 2) parsed.donnees.urgence = 'DD_PRIORITAIRE';\n      else if (diffJours < 7) parsed.donnees.urgence = 'DD_URGENT';\n      else if (diffJours < 90) parsed.donnees.urgence = 'DD_NORMAL';\n      else parsed.donnees.urgence = 'DD_3MOISETPLUS';\n    }\n  }\n  \n  return parsed;\n} catch(e) {\n  return { statut: \"incomplet\", message: output };\n}"
+        "jsCode": "const output = $json.output;\ntry {\n  const cleaned = output.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n  const parsed = JSON.parse(cleaned);\n  if (parsed.donnees) {\n    const today = new Date();\n    // Force la date_demande à aujourd'hui\n    parsed.donnees.date_demande = today.toISOString().split('T')[0];\n    // Corrige l'année de date_depart si incorrecte\n    if (parsed.donnees.date_depart) {\n      const dateDepart = new Date(parsed.donnees.date_depart);\n      // Si la date est dans le passé, corrige l'année\n      if (dateDepart < today) {\n        dateDepart.setFullYear(today.getFullYear());\n        // Si encore dans le passé, passe à l'année suivante\n        if (dateDepart < today) {\n          dateDepart.setFullYear(today.getFullYear() + 1);\n        }\n        parsed.donnees.date_depart = dateDepart.toISOString().split('T')[0];\n      }\n      // Recalcule l'urgence avec la date corrigée\n      const diffJours = Math.floor((dateDepart - today) / (1000 * 60 * 60 * 24));\n      if (diffJours < 2) parsed.donnees.urgence = 'DD_PRIORITAIRE';\n      else if (diffJours < 7) parsed.donnees.urgence = 'DD_URGENT';\n      else if (diffJours < 90) parsed.donnees.urgence = 'DD_NORMAL';\n      else parsed.donnees.urgence = 'DD_3MOISETPLUS';\n    }\n  }\n  return parsed;\n} catch(e) {\n  return { statut: \"incomplet\", message: output };\n}"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
         0,
-        48
+        0
       ],
-      "id": "22ff23d7-dfb2-469d-b7b0-a036e2af437a",
+      "id": "e3bd72c7-bd02-412c-be8b-0cb1f8f8b940",
       "name": "Code"
     },
     {
@@ -1171,38 +1157,10 @@
       "typeVersion": 2,
       "position": [
         992,
-        368
+        320
       ],
-      "id": "c6b6decd-36ef-475b-8407-e72ef37ef76a",
+      "id": "1c0c1e85-144f-4f6e-9c02-4dedc3c6e392",
       "name": "Générer PDF"
-    },
-    {
-      "parameters": {
-        "method": "POST",
-        "url": "https://api.brevo.com/v3/smtp/email",
-        "sendHeaders": true,
-        "headerParameters": {
-          "parameters": [
-            {
-              "name": "api-key",
-              "value": "={{ $env.BREVO_API_KEY }}"
-            }
-          ]
-        },
-        "sendBody": true,
-        "specifyBody": "json",
-        "jsonBody": "={\n  \"sender\": {\"name\": \"NeoTravel\", \"email\": \"neotravel.tech@gmail.com\"},\n  \"to\": [{\"email\": \"{{ $node['Code'].json.donnees.email }}\"}],\n  \"subject\": \"Votre devis NeoTravel\",\n  \"htmlContent\": \"<h2>Bonjour</h2><p>Votre devis est en pièce jointe.</p>\",\n  \"attachment\": [{\n    \"content\": \"{{ $node['Générer PDF'].json.pdf_base64 }}\",\n    \"name\": \"{{ $node['Générer PDF'].json.filename }}\"\n  }]\n}",
-        "options": {}
-      },
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.4,
-      "position": [
-        1232,
-        160
-      ],
-      "id": "8f475656-e018-483d-ab0d-84bc4b2ef641",
-      "name": "mail devis",
-      "disabled": true
     },
     {
       "parameters": {
@@ -1222,7 +1180,7 @@
           "value": {
             "Email envoyé": true,
             "id": "={{ $node[\"Créer Relance\"].json.id }}",
-            "Date d'envoi réel": "={{ new Date().toISOString().split('T')[0] }}",
+            "Date d'envoi réel": "={{ new Date().toISOString() }}",
             "Statut relance": "Envoyée",
             "Numéro de relance": 1
           },
@@ -1329,10 +1287,10 @@
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 2.2,
       "position": [
-        2608,
-        480
+        2992,
+        272
       ],
-      "id": "a52ba65c-8623-4761-9f81-6baa3aa2a011",
+      "id": "7ff4471f-0765-423e-9cd7-1c61acd881d2",
       "name": "Update relance",
       "credentials": {
         "airtableTokenApi": {
@@ -1363,11 +1321,304 @@
             "Clé idempotence": "={{ $node[\"Code\"].json.donnees.email + \"_\" + $json.date_relance + \"_1\" }}",
             "Numéro de relance": "={{ 1 }}",
             "Date prévue": "={{ $json.date_relance }}",
-            "Date d'envoi réel": "={{ new Date().toISOString().split('T')[0] }}",
-            "Statut relance": "Planifiée"
+            "Statut relance": "Planifiée",
+            "Date de planification": "={{ new Date().toISOString().split('T')[0] }}"
           },
           "matchingColumns": [],
           "schema": [
+            {
+              "id": "Clé idempotence",
+              "displayName": "Clé idempotence",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Numéro de relance",
+              "displayName": "Numéro de relance",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date de planification",
+              "displayName": "Date de planification",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date prévue",
+              "displayName": "Date prévue",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Statut relance",
+              "displayName": "Statut relance",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Planifiée",
+                  "value": "Planifiée"
+                },
+                {
+                  "name": "Envoyée",
+                  "value": "Envoyée"
+                },
+                {
+                  "name": "Annulée",
+                  "value": "Annulée"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email envoyé",
+              "displayName": "Email envoyé",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "boolean",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        1936,
+        432
+      ],
+      "id": "c202f940-4f44-494b-9151-26742334d431",
+      "name": "Créer Relance",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "T2aOAM9JweHAV3Cf",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "appGGAlQWuG2wb5kd",
+          "mode": "list",
+          "cachedResultName": "NeoTravel — CRM",
+          "cachedResultUrl": "https://airtable.com/appGGAlQWuG2wb5kd"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblZivQRw7GW1jawF",
+          "mode": "list",
+          "cachedResultName": "Demandes",
+          "cachedResultUrl": "https://airtable.com/appGGAlQWuG2wb5kd/tblZivQRw7GW1jawF"
+        },
+        "id": "={{ $node[\"CRM Créer Demande\"].json.id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        2352,
+        432
+      ],
+      "id": "c9ac63d1-a0bf-4b3d-b16a-5ece48d00503",
+      "name": "Get a record",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "T2aOAM9JweHAV3Cf",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "77e15e9a-030e-4587-9f75-d799511ba4b6",
+              "leftValue": "={{ $json.fields.Statut }}",
+              "rightValue": "Devis envoyé",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        2560,
+        432
+      ],
+      "id": "17c84455-d1b5-4dc0-b974-a6328d12c867",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "amount": 3,
+        "unit": "days"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        2144,
+        432
+      ],
+      "id": "89c7970a-2bb0-45d0-9b4a-24d7bd4da14d",
+      "name": "Attente Relance 1",
+      "webhookId": "93b5fbb8-958f-4e3e-b57e-8cf694979bba"
+    },
+    {
+      "parameters": {
+        "amount": 4,
+        "unit": "days"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        3312,
+        272
+      ],
+      "id": "a19e9990-5b28-42a9-8ae8-7fd52228cba4",
+      "name": "Attente Relance 2",
+      "webhookId": "93b5fbb8-958f-4e3e-b57e-8cf694979bba"
+    },
+    {
+      "parameters": {
+        "base": {
+          "__rl": true,
+          "value": "appGGAlQWuG2wb5kd",
+          "mode": "list",
+          "cachedResultName": "NeoTravel — CRM",
+          "cachedResultUrl": "https://airtable.com/appGGAlQWuG2wb5kd"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblZivQRw7GW1jawF",
+          "mode": "list",
+          "cachedResultName": "Demandes",
+          "cachedResultUrl": "https://airtable.com/appGGAlQWuG2wb5kd/tblZivQRw7GW1jawF"
+        },
+        "id": "={{ $node[\"CRM Créer Demande\"].json.id }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        3488,
+        272
+      ],
+      "id": "531c5721-7ca6-40bd-95d1-d2550a944681",
+      "name": "Get a record 2",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "T2aOAM9JweHAV3Cf",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "fromEmail": "neotravel.tech@gmail.com",
+        "toEmail": "={{ $node[\"Code\"].json.donnees.email }}",
+        "subject": "Relance — Votre devis NeoTravel est en attente",
+        "html": "==<h2>Bonjour {{ $node[\"Code\"].json.donnees.nom_societe }},</h2>\n<p>Nous vous avons envoyé un devis de <strong>{{ $node[\"Calculer devis\"].json.prix_ht }} € TTC</strong> pour votre société <strong>{{ $node[\"Code\"].json.donnees.nom_societe }}</strong>.</p>\n<p>Avez-vous des questions ? Nous restons à votre disposition pour finaliser votre réservation.</p>\n<p>Cordialement,<br/><strong>L'équipe NeoTravel</strong></p>",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        3904,
+        144
+      ],
+      "id": "d1836735-acb4-41c0-8658-f905ed0a5858",
+      "name": "Email Relance 2",
+      "webhookId": "3ac8cf07-6e2b-46ed-b8ec-e1afb0ca98df",
+      "credentials": {
+        "smtp": {
+          "id": "cFXNuRUuExsuVmW3",
+          "name": "SMTP account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appGGAlQWuG2wb5kd",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblgiAeSOwD70OAJW",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Email envoyé": true,
+            "id": "={{ $node[\"Créer Relance\"].json.id }}",
+            "Date d'envoi réel": "={{ new Date().toISOString() }}",
+            "Statut relance": "Envoyée",
+            "Numéro de relance": 2
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true,
+              "removed": false
+            },
             {
               "id": "Clé idempotence",
               "displayName": "Clé idempotence",
@@ -1457,11 +1708,971 @@
       "type": "n8n-nodes-base.airtable",
       "typeVersion": 2.2,
       "position": [
-        2160,
-        480
+        4160,
+        144
       ],
-      "id": "34927a36-087d-42a3-80eb-d23ed63e546c",
-      "name": "Créer Relance",
+      "id": "a1b34b10-e3af-446f-ae47-a374bf036b29",
+      "name": "Update relance 2",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "T2aOAM9JweHAV3Cf",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appGGAlQWuG2wb5kd",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblv2r0FCkW1SUYtK",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Référence devis": "={{ \"DEV-\" + Date.now() }}",
+            "TVA": "={{ $node[\"Calculer devis\"].json.tva }}",
+            "Prix TTC": "={{ $node[\"Calculer devis\"].json.prix_ttc }}",
+            "Détail du calcul": "={{ JSON.stringify($node[\"Calculer devis\"].json.lignes) }}",
+            "Statut devis": "Envoyé",
+            "Date d'envoi": "={{ new Date().toISOString() }}",
+            "Prix HT": 0,
+            "Demande liée": "={{ [$node[\"CRM Créer Demande\"].json.id] }}",
+            "Nombre de relances": 1
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Référence devis",
+              "displayName": "Référence devis",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Prix HT",
+              "displayName": "Prix HT",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "TVA",
+              "displayName": "TVA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Prix TTC",
+              "displayName": "Prix TTC",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Détail du calcul",
+              "displayName": "Détail du calcul",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Statut devis",
+              "displayName": "Statut devis",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Généré",
+                  "value": "Généré"
+                },
+                {
+                  "name": "Envoyé",
+                  "value": "Envoyé"
+                },
+                {
+                  "name": "Accepté",
+                  "value": "Accepté"
+                },
+                {
+                  "name": "Refusé",
+                  "value": "Refusé"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date d'envoi",
+              "displayName": "Date d'envoi",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Nombre de relances",
+              "displayName": "Nombre de relances",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date prochaine relance",
+              "displayName": "Date prochaine relance",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Demande liée",
+              "displayName": "Demande liée",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        3152,
+        272
+      ],
+      "id": "4aa70d97-c343-41cd-bf21-b6da3ae98f3e",
+      "name": "Update devis 1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "T2aOAM9JweHAV3Cf",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appGGAlQWuG2wb5kd",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblv2r0FCkW1SUYtK",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Référence devis": "={{ \"DEV-\" + Date.now() }}",
+            "TVA": "={{ $node[\"Calculer devis\"].json.tva }}",
+            "Prix TTC": "={{ $node[\"Calculer devis\"].json.prix_ttc }}",
+            "Détail du calcul": "={{ JSON.stringify($node[\"Calculer devis\"].json.lignes) }}",
+            "Statut devis": "Envoyé",
+            "Date d'envoi": "={{ new Date().toISOString() }}",
+            "Prix HT": 0,
+            "Demande liée": "={{ [$node[\"CRM Créer Demande\"].json.id] }}",
+            "Nombre de relances": 2
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Référence devis",
+              "displayName": "Référence devis",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Prix HT",
+              "displayName": "Prix HT",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "TVA",
+              "displayName": "TVA",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Prix TTC",
+              "displayName": "Prix TTC",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Détail du calcul",
+              "displayName": "Détail du calcul",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Statut devis",
+              "displayName": "Statut devis",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Généré",
+                  "value": "Généré"
+                },
+                {
+                  "name": "Envoyé",
+                  "value": "Envoyé"
+                },
+                {
+                  "name": "Accepté",
+                  "value": "Accepté"
+                },
+                {
+                  "name": "Refusé",
+                  "value": "Refusé"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date d'envoi",
+              "displayName": "Date d'envoi",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Nombre de relances",
+              "displayName": "Nombre de relances",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date prochaine relance",
+              "displayName": "Date prochaine relance",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Demande liée",
+              "displayName": "Demande liée",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [
+        4352,
+        144
+      ],
+      "id": "72c35416-d86d-46ac-a35e-53bcaa366664",
+      "name": "Update devis 2",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "T2aOAM9JweHAV3Cf",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "77e15e9a-030e-4587-9f75-d799511ba4b6",
+              "leftValue": "={{ $json.fields.Statut }}",
+              "rightValue": "Devis envoyé",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        3680,
+        272
+      ],
+      "id": "e74394b6-34bf-4266-95dd-20b0edb53366",
+      "name": "If2"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appGGAlQWuG2wb5kd",
+          "mode": "list",
+          "cachedResultName": "NeoTravel — CRM",
+          "cachedResultUrl": "https://airtable.com/appGGAlQWuG2wb5kd"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblZivQRw7GW1jawF",
+          "mode": "list",
+          "cachedResultName": "Demandes",
+          "cachedResultUrl": "https://airtable.com/appGGAlQWuG2wb5kd/tblZivQRw7GW1jawF"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $node[\"CRM Créer Demande\"].json.id }}",
+            "Statut": "Clôturé",
+            "Nombre de passagers": 0,
+            "Distance km": 0
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true
+            },
+            {
+              "id": "Nom / Société",
+              "displayName": "Nom / Société",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Téléphone",
+              "displayName": "Téléphone",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Ville de départ",
+              "displayName": "Ville de départ",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Ville d'arrivée",
+              "displayName": "Ville d'arrivée",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date trajet aller",
+              "displayName": "Date trajet aller",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date trajet retour",
+              "displayName": "Date trajet retour",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Nombre de passagers",
+              "displayName": "Nombre de passagers",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Distance km",
+              "displayName": "Distance km",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Type de trajet",
+              "displayName": "Type de trajet",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Aller simple",
+                  "value": "Aller simple"
+                },
+                {
+                  "name": "Aller/Retour",
+                  "value": "Aller/Retour"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Statut",
+              "displayName": "Statut",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Incomplet",
+                  "value": "Incomplet"
+                },
+                {
+                  "name": "Devis envoyé",
+                  "value": "Devis envoyé"
+                },
+                {
+                  "name": "Relance 1",
+                  "value": "Relance 1"
+                },
+                {
+                  "name": "Relance 2",
+                  "value": "Relance 2"
+                },
+                {
+                  "name": "Accepté",
+                  "value": "Accepté"
+                },
+                {
+                  "name": "Refusé",
+                  "value": "Refusé"
+                },
+                {
+                  "name": "Cas complexe",
+                  "value": "Cas complexe"
+                },
+                {
+                  "name": "Clôturé",
+                  "value": "Clôturé"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Urgence",
+              "displayName": "Urgence",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "DD_PRIORITAIRE",
+                  "value": "DD_PRIORITAIRE"
+                },
+                {
+                  "name": "DD_URGENT",
+                  "value": "DD_URGENT"
+                },
+                {
+                  "name": "DD_NORMAL",
+                  "value": "DD_NORMAL"
+                },
+                {
+                  "name": "DD_3MOISETPLUS",
+                  "value": "DD_3MOISETPLUS"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date de la demande",
+              "displayName": "Date de la demande",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Commentaire libre",
+              "displayName": "Commentaire libre",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Devis lié",
+              "displayName": "Devis lié",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        2832,
+        448
+      ],
+      "id": "578fc2d7-4244-4aa6-8535-7251e1789c63",
+      "name": "Update demande1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "T2aOAM9JweHAV3Cf",
+          "name": "Airtable Personal Access Token account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appGGAlQWuG2wb5kd",
+          "mode": "list",
+          "cachedResultName": "NeoTravel — CRM",
+          "cachedResultUrl": "https://airtable.com/appGGAlQWuG2wb5kd"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblZivQRw7GW1jawF",
+          "mode": "list",
+          "cachedResultName": "Demandes",
+          "cachedResultUrl": "https://airtable.com/appGGAlQWuG2wb5kd/tblZivQRw7GW1jawF"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "id": "={{ $node[\"CRM Créer Demande\"].json.id }}",
+            "Statut": "Clôturé",
+            "Nombre de passagers": 0,
+            "Distance km": 0
+          },
+          "matchingColumns": [
+            "id"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": true
+            },
+            {
+              "id": "Nom / Société",
+              "displayName": "Nom / Société",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Email",
+              "displayName": "Email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Téléphone",
+              "displayName": "Téléphone",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Ville de départ",
+              "displayName": "Ville de départ",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Ville d'arrivée",
+              "displayName": "Ville d'arrivée",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date trajet aller",
+              "displayName": "Date trajet aller",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date trajet retour",
+              "displayName": "Date trajet retour",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Nombre de passagers",
+              "displayName": "Nombre de passagers",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Distance km",
+              "displayName": "Distance km",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Type de trajet",
+              "displayName": "Type de trajet",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Aller simple",
+                  "value": "Aller simple"
+                },
+                {
+                  "name": "Aller/Retour",
+                  "value": "Aller/Retour"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Statut",
+              "displayName": "Statut",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Incomplet",
+                  "value": "Incomplet"
+                },
+                {
+                  "name": "Devis envoyé",
+                  "value": "Devis envoyé"
+                },
+                {
+                  "name": "Relance 1",
+                  "value": "Relance 1"
+                },
+                {
+                  "name": "Relance 2",
+                  "value": "Relance 2"
+                },
+                {
+                  "name": "Accepté",
+                  "value": "Accepté"
+                },
+                {
+                  "name": "Refusé",
+                  "value": "Refusé"
+                },
+                {
+                  "name": "Cas complexe",
+                  "value": "Cas complexe"
+                },
+                {
+                  "name": "Clôturé",
+                  "value": "Clôturé"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Urgence",
+              "displayName": "Urgence",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "DD_PRIORITAIRE",
+                  "value": "DD_PRIORITAIRE"
+                },
+                {
+                  "name": "DD_URGENT",
+                  "value": "DD_URGENT"
+                },
+                {
+                  "name": "DD_NORMAL",
+                  "value": "DD_NORMAL"
+                },
+                {
+                  "name": "DD_3MOISETPLUS",
+                  "value": "DD_3MOISETPLUS"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date de la demande",
+              "displayName": "Date de la demande",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Commentaire libre",
+              "displayName": "Commentaire libre",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Devis lié",
+              "displayName": "Devis lié",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.2,
+      "position": [
+        3920,
+        336
+      ],
+      "id": "b400ed03-066e-4dca-8d0f-667dcffb47da",
+      "name": "Update demande2",
       "credentials": {
         "airtableTokenApi": {
           "id": "T2aOAM9JweHAV3Cf",
@@ -1601,17 +2812,6 @@
       "main": [
         [
           {
-            "node": "Attente Relance",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Attente Relance": {
-      "main": [
-        [
-          {
             "node": "Créer Relance",
             "type": "main",
             "index": 0
@@ -1696,11 +2896,6 @@
         ]
       ]
     },
-    "mail devis": {
-      "main": [
-        []
-      ]
-    },
     "Email Relance": {
       "main": [
         [
@@ -1716,7 +2911,131 @@
       "main": [
         [
           {
+            "node": "Attente Relance 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a record": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
             "node": "Email Relance",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update demande1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attente Relance 1": {
+      "main": [
+        [
+          {
+            "node": "Get a record",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update relance": {
+      "main": [
+        [
+          {
+            "node": "Update devis 1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attente Relance 2": {
+      "main": [
+        [
+          {
+            "node": "Get a record 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a record 2": {
+      "main": [
+        [
+          {
+            "node": "If2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Email Relance 2": {
+      "main": [
+        [
+          {
+            "node": "Update relance 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update devis 1": {
+      "main": [
+        [
+          {
+            "node": "Attente Relance 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update relance 2": {
+      "main": [
+        [
+          {
+            "node": "Update devis 2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If2": {
+      "main": [
+        [
+          {
+            "node": "Email Relance 2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update demande2",
             "type": "main",
             "index": 0
           }
@@ -1730,13 +3049,13 @@
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "3640a7b8-062b-437a-87e1-cf26753aee25",
+  "versionId": "f010cfc6-df7b-4791-b793-48a13b88f9dc",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "0706cde6282beec2a1e6bf78e848119b9e784c457b1bbf4594286dce4a8021fd"
   },
   "nodeGroups": [],
-  "id": "Jnc5ZSiGp9uaMcyA",
+  "id": "eGjEsfimIl3QOEDa",
   "tags": [
     {
       "updatedAt": "2026-06-24T09:03:24.673Z",
