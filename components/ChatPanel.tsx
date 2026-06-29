@@ -21,7 +21,10 @@ const SUGGESTIONS = [
   "120 personnes, tour d'Italie sur 6 jours, 2 cars, départ Marseille",
 ];
 
-const prettyField = (f: string) => f.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+const prettyField = (f: string) => {
+  const s = f.replace(/_/g, " ").trim();
+  return s ? s.charAt(0).toUpperCase() + s.slice(1).toLowerCase() : s;
+};
 
 const GREETING_TEXT =
   "Bonjour ! Décrivez votre besoin (groupe, trajet, dates) et je vous chiffre un devis, ou je vous dis ce qu'il me manque.";
