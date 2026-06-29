@@ -1,0 +1,562 @@
+{
+  "name": "NeoTravel v2 — Lead → Qualification → Devis → CRM → Relance",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "neotravel-lead",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "id": "node-webhook",
+      "name": "Webhook NeoTravel Lead",
+      "webhookId": "neotravel-lead"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Tu es l'assistant commercial de NeoTravel, spécialiste du transport de groupe en autocar. Tu analyses les demandes prospects et extrais les informations en JSON structuré.\n\nRÈGLES ABSOLUES :\n- Tu ne calcules JAMAIS un prix\n- Tu ne proposes JAMAIS de remise ou condition commerciale\n- Tu réponds UNIQUEMENT en JSON valide\n\nChamps obligatoires à extraire :\n- nom_societe (string)\n- email (string, email valide)\n- telephone (string)\n- ville_depart (string)\n- ville_arrivee (string)\n- date_depart (string, format YYYY-MM-DD)\n- nb_passagers (integer > 0 et <= 85)\n- distance_km (integer > 0)\n- aller_retour (boolean)\n- urgence (string: DD_PRIORITAIRE si départ < 48h, DD_URGENT si < 7 jours, DD_NORMAL si < 3 mois, DD_3MOISETPLUS sinon)\n\nCAS D'ESCALADE HUMAINE (retourner statut: cas_complexe) :\n- Trajet international ou multi-étapes\n- Voyage > 3 jours avec nuits chauffeur\n- Demande de remise ou condition sur mesure\n- nb_passagers > 75\n- Données incohérentes ou ambiguës\n\nSi champs manquants : {statut: incomplet, champs_manquants: [liste], message: message poli au prospect}\nSi cas complexe : {statut: cas_complexe, raison: explication, resume: résumé pour le commercial}\nSi complet et standard : {statut: complet, donnees: {...tous les champs...}}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [500, 300],
+      "id": "node-ai-agent",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "rule-complet",
+                    "leftValue": "={{ $json.statut }}",
+                    "rightValue": "complet",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "complet"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "rule-incomplet",
+                    "leftValue": "={{ $json.statut }}",
+                    "rightValue": "incomplet",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "incomplet"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict"
+                },
+                "conditions": [
+                  {
+                    "id": "rule-cas-complexe",
+                    "leftValue": "={{ $json.statut }}",
+                    "rightValue": "cas_complexe",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "cas_complexe"
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra"
+        }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [750, 300],
+      "id": "node-switch",
+      "name": "Router Statut"
+    },
+
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://neotravel.vercel.app/api/devis",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($node[\"AI Agent\"].json.donnees) }}",
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1000, 100],
+      "id": "node-http-devis",
+      "name": "Calculer Devis"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appGGAlQWuG2wb5kd",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblZivQRw7GW1jawF",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "nom_societe": "={{ $node[\"AI Agent\"].json.donnees.nom_societe }}",
+            "email": "={{ $node[\"AI Agent\"].json.donnees.email }}",
+            "telephone": "={{ $node[\"AI Agent\"].json.donnees.telephone }}",
+            "ville_depart": "={{ $node[\"AI Agent\"].json.donnees.ville_depart }}",
+            "ville_arrivee": "={{ $node[\"AI Agent\"].json.donnees.ville_arrivee }}",
+            "date_depart": "={{ $node[\"AI Agent\"].json.donnees.date_depart }}",
+            "nb_passagers": "={{ $node[\"AI Agent\"].json.donnees.nb_passagers }}",
+            "distance_km": "={{ $node[\"AI Agent\"].json.donnees.distance_km }}",
+            "aller_retour": "={{ $node[\"AI Agent\"].json.donnees.aller_retour }}",
+            "urgence": "={{ $node[\"AI Agent\"].json.donnees.urgence }}",
+            "prix_ht": "={{ $node[\"Calculer Devis\"].json.prix_ht }}",
+            "prix_ttc": "={{ $node[\"Calculer Devis\"].json.prix_ttc }}",
+            "statut": "Qualifié"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [1250, 100],
+      "id": "node-airtable-demande",
+      "name": "CRM Créer Demande"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appGGAlQWuG2wb5kd",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblv2r0FCkW1SUYtK",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "nom_societe": "={{ $node[\"AI Agent\"].json.donnees.nom_societe }}",
+            "email": "={{ $node[\"AI Agent\"].json.donnees.email }}",
+            "prix_ht": "={{ $node[\"Calculer Devis\"].json.prix_ht }}",
+            "tva": "={{ $node[\"Calculer Devis\"].json.tva }}",
+            "prix_ttc": "={{ $node[\"Calculer Devis\"].json.prix_ttc }}",
+            "detail_calcul": "={{ JSON.stringify($node[\"Calculer Devis\"].json.lignes) }}",
+            "coefficients": "={{ JSON.stringify($node[\"Calculer Devis\"].json.coefficients) }}",
+            "statut_devis": "Généré"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [1500, 100],
+      "id": "node-airtable-devis",
+      "name": "CRM Créer Devis"
+    },
+    {
+      "parameters": {
+        "fromEmail": "devis@neotravel.fr",
+        "toEmail": "={{ $node[\"AI Agent\"].json.donnees.email }}",
+        "subject": "Votre devis NeoTravel — {{ $node[\"AI Agent\"].json.donnees.nom_societe }}",
+        "html": "<h2>Bonjour,</h2><p>Merci pour votre demande auprès de NeoTravel. Voici votre devis personnalisé :</p><table style=\"border-collapse:collapse;width:100%;max-width:500px\"><tr style=\"background:#f5f5f5\"><td style=\"padding:8px;border:1px solid #ddd\"><strong>Trajet</strong></td><td style=\"padding:8px;border:1px solid #ddd\">{{ $node[\"AI Agent\"].json.donnees.ville_depart }} → {{ $node[\"AI Agent\"].json.donnees.ville_arrivee }}</td></tr><tr><td style=\"padding:8px;border:1px solid #ddd\"><strong>Date</strong></td><td style=\"padding:8px;border:1px solid #ddd\">{{ $node[\"AI Agent\"].json.donnees.date_depart }}</td></tr><tr style=\"background:#f5f5f5\"><td style=\"padding:8px;border:1px solid #ddd\"><strong>Passagers</strong></td><td style=\"padding:8px;border:1px solid #ddd\">{{ $node[\"AI Agent\"].json.donnees.nb_passagers }}</td></tr><tr><td style=\"padding:8px;border:1px solid #ddd\"><strong>Distance</strong></td><td style=\"padding:8px;border:1px solid #ddd\">{{ $node[\"AI Agent\"].json.donnees.distance_km }} km{{ $node[\"AI Agent\"].json.donnees.aller_retour ? ' (aller/retour)' : ' (aller simple)' }}</td></tr><tr style=\"background:#f5f5f5\"><td style=\"padding:8px;border:1px solid #ddd\"><strong>Prix HT</strong></td><td style=\"padding:8px;border:1px solid #ddd\">{{ $node[\"Calculer Devis\"].json.prix_ht }} €</td></tr><tr><td style=\"padding:8px;border:1px solid #ddd\"><strong>TVA (10%)</strong></td><td style=\"padding:8px;border:1px solid #ddd\">{{ $node[\"Calculer Devis\"].json.tva }} €</td></tr><tr style=\"background:#2563eb;color:white\"><td style=\"padding:10px;border:1px solid #ddd\"><strong>Prix TTC</strong></td><td style=\"padding:10px;border:1px solid #ddd\"><strong>{{ $node[\"Calculer Devis\"].json.prix_ttc }} €</strong></td></tr></table><p style=\"margin-top:20px\">Ce devis est valable 30 jours. Pour confirmer ou poser vos questions, répondez directement à cet email.</p><p>À bientôt,<br/><strong>L'équipe NeoTravel</strong></p>"
+      },
+      "type": "n8n-nodes-base.resend",
+      "typeVersion": 1,
+      "position": [1750, 100],
+      "id": "node-email-devis",
+      "name": "Envoyer Devis Email",
+      "credentials": {
+        "resendApi": {
+          "id": "REMPLACER_PAR_CREDENTIAL_ID",
+          "name": "Resend API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": {
+          "__rl": true,
+          "value": "appGGAlQWuG2wb5kd",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblZivQRw7GW1jawF",
+          "mode": "id"
+        },
+        "id": "={{ $node[\"CRM Créer Demande\"].json.id }}",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "statut": "Devis envoyé"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [2000, 100],
+      "id": "node-airtable-maj-statut",
+      "name": "CRM Maj Statut Demande"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, message: \"Devis envoyé avec succès.\", prix_ht: $node[\"Calculer Devis\"].json.prix_ht, prix_ttc: $node[\"Calculer Devis\"].json.prix_ttc, devise: \"EUR\" }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2250, 0],
+      "id": "node-respond-succes",
+      "name": "Respond Succès"
+    },
+    {
+      "parameters": {
+        "jsCode": "const urgence = $node[\"AI Agent\"].json.donnees.urgence;\nconst delaiJours = (urgence === \"DD_PRIORITAIRE\" || urgence === \"DD_URGENT\") ? 2 : 3;\nconst dateRelance = new Date(Date.now() + delaiJours * 86400000).toISOString().split('T')[0];\nreturn { delai_jours: delaiJours, date_relance: dateRelance, email: $node[\"AI Agent\"].json.donnees.email, nom_societe: $node[\"AI Agent\"].json.donnees.nom_societe, prix_ttc: $node[\"Calculer Devis\"].json.prix_ttc };"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2250, 200],
+      "id": "node-calcul-relance",
+      "name": "Calcul Délai Relance"
+    },
+    {
+      "parameters": {
+        "amount": "={{ $json.delai_jours }}",
+        "unit": "days"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [2500, 200],
+      "id": "node-wait-relance",
+      "name": "Attente Relance"
+    },
+    {
+      "parameters": {
+        "fromEmail": "relance@neotravel.fr",
+        "toEmail": "={{ $json.email }}",
+        "subject": "Relance — Votre devis NeoTravel est en attente",
+        "html": "<h2>Bonjour,</h2><p>Nous vous avons envoyé un devis de <strong>{{ $json.prix_ttc }} € TTC</strong> pour votre société <strong>{{ $json.nom_societe }}</strong>.</p><p>Avez-vous des questions ? Nous restons à votre disposition pour finaliser votre réservation.</p><p>Cordialement,<br/><strong>L'équipe NeoTravel</strong></p>"
+      },
+      "type": "n8n-nodes-base.resend",
+      "typeVersion": 1,
+      "position": [2750, 200],
+      "id": "node-email-relance",
+      "name": "Envoyer Relance Email",
+      "credentials": {
+        "resendApi": {
+          "id": "REMPLACER_PAR_CREDENTIAL_ID",
+          "name": "Resend API"
+        }
+      }
+    },
+
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, message: $json.message, champs_manquants: $json.champs_manquants }) }}",
+        "options": {
+          "responseCode": 422
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1000, 500],
+      "id": "node-respond-incomplet",
+      "name": "Respond Incomplet"
+    },
+
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appGGAlQWuG2wb5kd",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblZivQRw7GW1jawF",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "nom_societe": "={{ $json.resume }}",
+            "raison_escalade": "={{ $json.raison }}",
+            "statut": "Cas complexe"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [1000, 700],
+      "id": "node-airtable-complexe",
+      "name": "CRM Demande Complexe"
+    },
+    {
+      "parameters": {
+        "fromEmail": "alertes@neotravel.fr",
+        "toEmail": "commercial@neotravel.fr",
+        "subject": "⚠️ Cas complexe — Intervention requise",
+        "html": "<h2>Nouvelle demande nécessitant une intervention humaine</h2><p><strong>Raison d'escalade :</strong> {{ $node[\"AI Agent\"].json.raison }}</p><p><strong>Résumé prospect :</strong></p><pre>{{ $node[\"AI Agent\"].json.resume }}</pre><p>Merci de recontacter le prospect sous 24h.</p>"
+      },
+      "type": "n8n-nodes-base.resend",
+      "typeVersion": 1,
+      "position": [1250, 700],
+      "id": "node-email-commercial",
+      "name": "Notifier Commercial",
+      "credentials": {
+        "resendApi": {
+          "id": "REMPLACER_PAR_CREDENTIAL_ID",
+          "name": "Resend API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, message: \"Votre demande nécessite une étude personnalisée. Un conseiller NeoTravel vous recontacte sous 24h.\", statut: \"cas_complexe\" }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1500, 700],
+      "id": "node-respond-complexe",
+      "name": "Respond Cas Complexe"
+    }
+  ],
+  "connections": {
+    "Webhook NeoTravel Lead": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Router Statut",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Router Statut": {
+      "main": [
+        [
+          {
+            "node": "Calculer Devis",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Incomplet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "CRM Demande Complexe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculer Devis": {
+      "main": [
+        [
+          {
+            "node": "CRM Créer Demande",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRM Créer Demande": {
+      "main": [
+        [
+          {
+            "node": "CRM Créer Devis",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRM Créer Devis": {
+      "main": [
+        [
+          {
+            "node": "Envoyer Devis Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Envoyer Devis Email": {
+      "main": [
+        [
+          {
+            "node": "CRM Maj Statut Demande",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRM Maj Statut Demande": {
+      "main": [
+        [
+          {
+            "node": "Respond Succès",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Calcul Délai Relance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calcul Délai Relance": {
+      "main": [
+        [
+          {
+            "node": "Attente Relance",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attente Relance": {
+      "main": [
+        [
+          {
+            "node": "Envoyer Relance Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "CRM Demande Complexe": {
+      "main": [
+        [
+          {
+            "node": "Notifier Commercial",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notifier Commercial": {
+      "main": [
+        [
+          {
+            "node": "Respond Cas Complexe",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "NeoTravel"
+    },
+    {
+      "name": "Production"
+    }
+  ],
+  "triggerCount": 1
+}

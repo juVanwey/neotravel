@@ -1,0 +1,470 @@
+{
+  "name": "NeoTravel Final — Lead → Qualification → Devis → CRM → Relance",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "neotravel-lead",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [-2560, 464],
+      "id": "node-webhook",
+      "name": "Webhook NeoTravel Lead",
+      "webhookId": "neotravel-lead"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Tu es l'assistant commercial de NeoTravel, spécialiste du transport de groupe en autocar. Tu analyses les demandes prospects et extrais les informations en JSON structuré.\n\nRÈGLES ABSOLUES :\n- Tu ne calcules JAMAIS un prix\n- Tu ne proposes JAMAIS de remise ou condition commerciale\n- Tu réponds UNIQUEMENT en JSON valide\n\nChamps obligatoires à extraire :\n- nom_societe (string)\n- email (string, email valide)\n- telephone (string)\n- ville_depart (string)\n- ville_arrivee (string)\n- date_depart (string, format YYYY-MM-DD)\n- nb_passagers (integer > 0 et <= 85)\n- distance_km (integer > 0)\n- aller_retour (boolean)\n- urgence (string: DD_PRIORITAIRE si départ < 48h, DD_URGENT si < 7 jours, DD_NORMAL si < 3 mois, DD_3MOISETPLUS sinon)\n\nCAS D'ESCALADE HUMAINE (retourner statut: cas_complexe) :\n- Trajet international ou multi-étapes\n- Voyage > 3 jours avec nuits chauffeur\n- Demande de remise ou condition sur mesure\n- nb_passagers > 75\n- Données incohérentes ou ambiguës\n\nSi champs manquants : {statut: incomplet, champs_manquants: [liste], message: message poli au prospect}\nSi cas complexe : {statut: cas_complexe, raison: explication, resume: résumé pour le commercial}\nSi complet et standard : {statut: complet, donnees: {...tous les champs...}}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [-2320, 464],
+      "id": "node-ai-agent",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "claude-sonnet-4-6",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [-2320, 684],
+      "id": "node-anthropic-model",
+      "name": "Anthropic Chat Model"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "conditions": [
+                  {
+                    "id": "rule-complet",
+                    "leftValue": "={{ $json.statut }}",
+                    "rightValue": "complet",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "complet"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "conditions": [
+                  {
+                    "id": "rule-incomplet",
+                    "leftValue": "={{ $json.statut }}",
+                    "rightValue": "incomplet",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "incomplet"
+            },
+            {
+              "conditions": {
+                "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+                "conditions": [
+                  {
+                    "id": "rule-cas-complexe",
+                    "leftValue": "={{ $json.statut }}",
+                    "rightValue": "cas_complexe",
+                    "operator": { "type": "string", "operation": "equals" }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "cas_complexe"
+            }
+          ]
+        },
+        "options": { "fallbackOutput": "extra" }
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [-2000, 464],
+      "id": "node-switch",
+      "name": "Router Statut"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Moteur de tarification NeoTravel — 100% déterministe, zéro LLM\n\nconst GRILLE_KM = {\n  10:250,20:250,30:250,40:320,50:350,60:390,\n  70:430,80:500,90:540,100:580,110:620,120:660,\n  130:700,140:740,150:780,160:820,170:860,180:900\n};\n\nconst COEFF_SAISONNALITE = {\n  1:-0.07,2:-0.07,3:+0.10,4:+0.10,5:+0.15,6:+0.15,\n  7:+0.10,8:-0.07,9:0.00,10:0.00,11:-0.07,12:0.00\n};\n\nconst COEFF_URGENCE = {\n  DD_PRIORITAIRE:+0.10,DD_URGENT:+0.05,DD_NORMAL:-0.05,DD_3MOISETPLUS:-0.10\n};\n\nconst TRANCHES_CAPACITE = [\n  [0,19,-0.05],[19,53,0.00],[53,63,+0.15],[63,67,+0.20],[67,85,+0.40]\n];\n\nconst MARGE = 0.15;\nconst TVA = 0.10;\nconst PRIX_KM_LONG = 2.5;\n\nfunction arrondir_km(km) {\n  return Math.ceil(km / 10) * 10;\n}\n\nfunction prix_base_simple(distance_km) {\n  if (distance_km <= 0) throw new Error('La distance doit être supérieure à 0 km.');\n  if (distance_km > 850) throw new Error('Distance irréaliste : ' + distance_km + ' km.');\n  if (distance_km <= 180) {\n    const km_arrondi = arrondir_km(distance_km);\n    const prix = GRILLE_KM[km_arrondi];\n    if (prix === undefined) throw new Error('Pas de tarif en grille pour ' + km_arrondi + ' km.');\n    return { prix, source: 'Grille forfait (' + km_arrondi + ' km)' };\n  }\n  const prix = (distance_km * 2) * PRIX_KM_LONG;\n  return { prix, source: 'Hors grille (' + distance_km + ' km × 2 × ' + PRIX_KM_LONG + ' €/km)' };\n}\n\nfunction get_coeff_saisonnalite(date_depart) {\n  const d = new Date(date_depart);\n  if (isNaN(d.getTime())) throw new Error('Date de départ invalide : ' + date_depart);\n  const mois = d.getMonth() + 1;\n  return { coeff: COEFF_SAISONNALITE[mois], label: 'Mois ' + mois + ' → ' + (COEFF_SAISONNALITE[mois] * 100).toFixed(0) + '%' };\n}\n\nfunction get_coeff_urgence(code_urgence) {\n  const coeff = COEFF_URGENCE[code_urgence];\n  if (coeff === undefined) throw new Error('Code urgence invalide : \"' + code_urgence + '\". Valeurs acceptées : ' + Object.keys(COEFF_URGENCE).join(', '));\n  return { coeff, label: code_urgence + ' → ' + (coeff * 100).toFixed(0) + '%' };\n}\n\nfunction get_coeff_capacite(nb_passagers) {\n  if (nb_passagers <= 0) throw new Error('Le nombre de passagers doit être > 0.');\n  if (nb_passagers > 85) throw new Error('Capacité max dépassée : ' + nb_passagers + ' passagers (max 85).');\n  for (const [min_excl, max_incl, coeff] of TRANCHES_CAPACITE) {\n    if (nb_passagers > min_excl && nb_passagers <= max_incl) {\n      return { coeff, label: nb_passagers + ' passagers (tranche ' + (min_excl+1) + '–' + max_incl + ') → ' + (coeff * 100).toFixed(0) + '%' };\n    }\n  }\n  throw new Error('Aucune tranche trouvée pour ' + nb_passagers + ' passagers.');\n}\n\nfunction calculer_devis(params) {\n  const { nb_passagers, date_depart, date_demande, distance_km, aller_retour, urgence, options = {} } = params;\n\n  if (nb_passagers === undefined || nb_passagers === null) throw new Error('Paramètre manquant : nb_passagers');\n  if (!date_depart) throw new Error('Paramètre manquant : date_depart');\n  if (!date_demande) throw new Error('Paramètre manquant : date_demande');\n  if (distance_km === undefined || distance_km === null) throw new Error('Paramètre manquant : distance_km');\n  if (urgence === undefined || urgence === null) throw new Error('Paramètre manquant : urgence');\n\n  const lignes = [];\n\n  const { prix: base_simple, source: source_base } = prix_base_simple(distance_km);\n  lignes.push({ libelle: 'Base transfert simple — ' + source_base, montant: base_simple });\n\n  let base = base_simple;\n  if (aller_retour) {\n    base = base_simple * 2;\n    lignes.push({ libelle: 'Aller/Retour (× 2)', montant: base });\n  }\n\n  const montant_marge = base * MARGE;\n  const apres_marge = base + montant_marge;\n  lignes.push({ libelle: 'Marge commerciale (+' + (MARGE * 100).toFixed(0) + '%)', montant: montant_marge });\n\n  const { coeff: cs, label: label_saison } = get_coeff_saisonnalite(date_depart);\n  const montant_saison = apres_marge * cs;\n  const apres_saison = apres_marge + montant_saison;\n  lignes.push({ libelle: 'Saisonnalité — ' + label_saison, montant: montant_saison });\n\n  const { coeff: cu, label: label_urgence } = get_coeff_urgence(urgence);\n  const montant_urgence = apres_saison * cu;\n  const apres_urgence = apres_saison + montant_urgence;\n  lignes.push({ libelle: 'Urgence — ' + label_urgence, montant: montant_urgence });\n\n  const { coeff: cc, label: label_capacite } = get_coeff_capacite(nb_passagers);\n  const montant_capacite = apres_urgence * cc;\n  const apres_capacite = apres_urgence + montant_capacite;\n  lignes.push({ libelle: 'Capacité — ' + label_capacite, montant: montant_capacite });\n\n  let total_options = 0;\n  if (options.nb_guides && options.nb_guides > 0) {\n    const nb_jours = options.nb_jours || 1;\n    const montant_guide = options.nb_guides * 80 * nb_jours;\n    total_options += montant_guide;\n    lignes.push({ libelle: 'Guide(s) — ' + options.nb_guides + ' × 80€ × ' + nb_jours + ' jour(s)', montant: montant_guide });\n  }\n  if (options.nb_nuits_chauffeur && options.nb_nuits_chauffeur > 0) {\n    const montant_nuit = options.nb_nuits_chauffeur * 120;\n    total_options += montant_nuit;\n    lignes.push({ libelle: 'Nuit(s) chauffeur — ' + options.nb_nuits_chauffeur + ' × 120€', montant: montant_nuit });\n  }\n  if (options.peages_inclus) {\n    lignes.push({ libelle: 'Péages — inclus au forfait', montant: 0 });\n  }\n\n  const prix_ht = Math.round((apres_capacite + total_options) * 100) / 100;\n  lignes.push({ libelle: '─── SOUS-TOTAL HT', montant: prix_ht });\n\n  const montant_tva = Math.round(prix_ht * TVA * 100) / 100;\n  lignes.push({ libelle: 'TVA (' + (TVA * 100).toFixed(0) + '%)', montant: montant_tva });\n\n  const prix_ttc = Math.round((prix_ht + montant_tva) * 100) / 100;\n\n  return {\n    prix_ht, tva: montant_tva, prix_ttc, devise: 'EUR', lignes,\n    coefficients: {\n      marge: '+' + (MARGE * 100).toFixed(0) + '%',\n      saisonnalite: label_saison,\n      urgence: label_urgence,\n      capacite: label_capacite\n    },\n    meta: {\n      distance_km, aller_retour: aller_retour || false, nb_passagers,\n      date_depart, date_demande, calcule_le: new Date().toISOString()\n    }\n  };\n}\n\n// ── EXÉCUTION ──\nconst donnees = $json.donnees;\nreturn calculer_devis(donnees);"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-1760, 464],
+      "id": "node-calculer-devis",
+      "name": "Calculer devis"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": { "__rl": true, "value": "appGGAlQWuG2wb5kd", "mode": "id" },
+        "table": { "__rl": true, "value": "tblZivQRw7GW1jawF", "mode": "id" },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "nom_societe": "={{ $node[\"AI Agent\"].json.donnees.nom_societe }}",
+            "email": "={{ $node[\"AI Agent\"].json.donnees.email }}",
+            "telephone": "={{ $node[\"AI Agent\"].json.donnees.telephone }}",
+            "ville_depart": "={{ $node[\"AI Agent\"].json.donnees.ville_depart }}",
+            "ville_arrivee": "={{ $node[\"AI Agent\"].json.donnees.ville_arrivee }}",
+            "date_depart": "={{ $node[\"AI Agent\"].json.donnees.date_depart }}",
+            "nb_passagers": "={{ $node[\"AI Agent\"].json.donnees.nb_passagers }}",
+            "distance_km": "={{ $node[\"AI Agent\"].json.donnees.distance_km }}",
+            "aller_retour": "={{ $node[\"AI Agent\"].json.donnees.aller_retour }}",
+            "urgence": "={{ $node[\"AI Agent\"].json.donnees.urgence }}",
+            "prix_ht": "={{ $node[\"Calculer devis\"].json.prix_ht }}",
+            "prix_ttc": "={{ $node[\"Calculer devis\"].json.prix_ttc }}",
+            "statut": "Qualifié"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [-1520, 464],
+      "id": "node-airtable-demande",
+      "name": "CRM Créer Demande",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Y9lNZ0bBDsSF951g",
+          "name": "Airtable NeoTravel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": { "__rl": true, "value": "appGGAlQWuG2wb5kd", "mode": "id" },
+        "table": { "__rl": true, "value": "tblv2r0FCkW1SUYtK", "mode": "id" },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "nom_societe": "={{ $node[\"AI Agent\"].json.donnees.nom_societe }}",
+            "email": "={{ $node[\"AI Agent\"].json.donnees.email }}",
+            "prix_ht": "={{ $node[\"Calculer devis\"].json.prix_ht }}",
+            "tva": "={{ $node[\"Calculer devis\"].json.tva }}",
+            "prix_ttc": "={{ $node[\"Calculer devis\"].json.prix_ttc }}",
+            "detail_calcul": "={{ JSON.stringify($node[\"Calculer devis\"].json.lignes) }}",
+            "coefficients": "={{ JSON.stringify($node[\"Calculer devis\"].json.coefficients) }}",
+            "statut_devis": "Généré"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [-1280, 464],
+      "id": "node-airtable-devis",
+      "name": "CRM Créer Devis",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Y9lNZ0bBDsSF951g",
+          "name": "Airtable NeoTravel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer re_GahAFqqU_eYV4ewT4R53sMvjSngXpUYQ5" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ from: 'NeoTravel <onboarding@resend.dev>', to: [$node['AI Agent'].json.donnees.email], subject: 'Votre devis NeoTravel — ' + $node['AI Agent'].json.donnees.nom_societe, html: '<h2>Bonjour,</h2><p>Merci pour votre demande auprès de NeoTravel. Voici votre devis personnalisé :</p><table style=\"border-collapse:collapse;width:100%;max-width:500px\"><tr style=\"background:#f5f5f5\"><td style=\"padding:8px;border:1px solid #ddd\"><strong>Trajet</strong></td><td style=\"padding:8px;border:1px solid #ddd\">' + $node['AI Agent'].json.donnees.ville_depart + ' → ' + $node['AI Agent'].json.donnees.ville_arrivee + '</td></tr><tr><td style=\"padding:8px;border:1px solid #ddd\"><strong>Date</strong></td><td style=\"padding:8px;border:1px solid #ddd\">' + $node['AI Agent'].json.donnees.date_depart + '</td></tr><tr style=\"background:#f5f5f5\"><td style=\"padding:8px;border:1px solid #ddd\"><strong>Passagers</strong></td><td style=\"padding:8px;border:1px solid #ddd\">' + $node['AI Agent'].json.donnees.nb_passagers + '</td></tr><tr><td style=\"padding:8px;border:1px solid #ddd\"><strong>Distance</strong></td><td style=\"padding:8px;border:1px solid #ddd\">' + $node['AI Agent'].json.donnees.distance_km + ' km</td></tr><tr style=\"background:#f5f5f5\"><td style=\"padding:8px;border:1px solid #ddd\"><strong>Prix HT</strong></td><td style=\"padding:8px;border:1px solid #ddd\">' + $node['Calculer devis'].json.prix_ht + ' €</td></tr><tr><td style=\"padding:8px;border:1px solid #ddd\"><strong>TVA (10%)</strong></td><td style=\"padding:8px;border:1px solid #ddd\">' + $node['Calculer devis'].json.tva + ' €</td></tr><tr style=\"background:#2563eb;color:white\"><td style=\"padding:10px;border:1px solid #ddd\"><strong>Prix TTC</strong></td><td style=\"padding:10px;border:1px solid #ddd\"><strong>' + $node['Calculer devis'].json.prix_ttc + ' €</strong></td></tr></table><p style=\"margin-top:20px\">Ce devis est valable 30 jours. Pour confirmer ou poser vos questions, répondez directement à cet email.</p><p>À bientôt,<br/><strong>L\\'équipe NeoTravel</strong></p>' }) }}",
+        "options": { "timeout": 10000 }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-1040, 464],
+      "id": "node-http-email-devis",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "base": { "__rl": true, "value": "appGGAlQWuG2wb5kd", "mode": "id" },
+        "table": { "__rl": true, "value": "tblZivQRw7GW1jawF", "mode": "id" },
+        "id": "={{ $node[\"CRM Créer Demande\"].json.id }}",
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "statut": "Devis envoyé"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [-800, 464],
+      "id": "node-airtable-maj-statut",
+      "name": "CRM Maj Statut Demande",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Y9lNZ0bBDsSF951g",
+          "name": "Airtable NeoTravel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, message: 'Devis envoyé avec succès.', prix_ht: $node['Calculer devis'].json.prix_ht, prix_ttc: $node['Calculer devis'].json.prix_ttc, devise: 'EUR' }) }}",
+        "options": { "responseCode": 200 }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [-560, 344],
+      "id": "node-respond-succes",
+      "name": "Respond Succès"
+    },
+    {
+      "parameters": {
+        "jsCode": "const urgence = $node['AI Agent'].json.donnees.urgence;\nconst delaiJours = (urgence === 'DD_PRIORITAIRE' || urgence === 'DD_URGENT') ? 2 : 3;\nconst dateRelance = new Date(Date.now() + delaiJours * 86400000).toISOString().split('T')[0];\nreturn {\n  delai_jours: delaiJours,\n  date_relance: dateRelance,\n  email: $node['AI Agent'].json.donnees.email,\n  nom_societe: $node['AI Agent'].json.donnees.nom_societe,\n  prix_ttc: $node['Calculer devis'].json.prix_ttc\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [-560, 584],
+      "id": "node-calcul-relance",
+      "name": "Calcul Délai Relance"
+    },
+    {
+      "parameters": {
+        "amount": "={{ $json.delai_jours }}",
+        "unit": "days"
+      },
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [-320, 584],
+      "id": "node-wait-relance",
+      "name": "Attente Relance"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer re_GahAFqqU_eYV4ewT4R53sMvjSngXpUYQ5" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ from: 'NeoTravel <onboarding@resend.dev>', to: [$json.email], subject: 'Relance — Votre devis NeoTravel est en attente', html: '<h2>Bonjour,</h2><p>Nous vous avons envoyé un devis de <strong>' + $json.prix_ttc + ' € TTC</strong> pour votre société <strong>' + $json.nom_societe + '</strong>.</p><p>Avez-vous des questions ? Nous restons à votre disposition pour finaliser votre réservation.</p><p>Cordialement,<br/><strong>L\\'équipe NeoTravel</strong></p>' }) }}",
+        "options": { "timeout": 10000 }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-80, 584],
+      "id": "node-http-relance",
+      "name": "HTTP Request1"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, message: $json.message, champs_manquants: $json.champs_manquants }) }}",
+        "options": { "responseCode": 422 }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [-1760, 784],
+      "id": "node-respond-incomplet",
+      "name": "Respond Incomplet"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": { "__rl": true, "value": "appGGAlQWuG2wb5kd", "mode": "id" },
+        "table": { "__rl": true, "value": "tblZivQRw7GW1jawF", "mode": "id" },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "resume": "={{ $json.resume }}",
+            "raison_escalade": "={{ $json.raison }}",
+            "statut": "Cas complexe"
+          }
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [-1760, 1064],
+      "id": "node-airtable-complexe",
+      "name": "CRM Demande Complexe",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "Y9lNZ0bBDsSF951g",
+          "name": "Airtable NeoTravel"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.resend.com/emails",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "Bearer re_GahAFqqU_eYV4ewT4R53sMvjSngXpUYQ5" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ from: 'NeoTravel <onboarding@resend.dev>', to: ['ouachemleaticia@gmail.com'], subject: '⚠️ Cas complexe — Intervention requise', html: '<h2>Nouvelle demande nécessitant une intervention humaine</h2><p><strong>Raison d\\'escalade :</strong> ' + $node['AI Agent'].json.raison + '</p><p><strong>Résumé prospect :</strong></p><pre>' + $node['AI Agent'].json.resume + '</pre><p>Merci de recontacter le prospect sous 24h.</p>' }) }}",
+        "options": { "timeout": 10000 }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [-1520, 1064],
+      "id": "node-http-notif-commercial",
+      "name": "HTTP Request2"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, message: 'Votre demande nécessite une étude personnalisée. Un conseiller NeoTravel vous recontacte sous 24h.', statut: 'cas_complexe' }) }}",
+        "options": { "responseCode": 200 }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [-1280, 1064],
+      "id": "node-respond-complexe",
+      "name": "Respond Cas Complexe"
+    }
+  ],
+  "connections": {
+    "Webhook NeoTravel Lead": {
+      "main": [
+        [
+          { "node": "AI Agent", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          { "node": "Router Statut", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          { "node": "AI Agent", "type": "ai_languageModel", "index": 0 }
+        ]
+      ]
+    },
+    "Router Statut": {
+      "main": [
+        [
+          { "node": "Calculer devis", "type": "main", "index": 0 }
+        ],
+        [
+          { "node": "Respond Incomplet", "type": "main", "index": 0 }
+        ],
+        [
+          { "node": "CRM Demande Complexe", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Calculer devis": {
+      "main": [
+        [
+          { "node": "CRM Créer Demande", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "CRM Créer Demande": {
+      "main": [
+        [
+          { "node": "CRM Créer Devis", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "CRM Créer Devis": {
+      "main": [
+        [
+          { "node": "HTTP Request", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          { "node": "CRM Maj Statut Demande", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "CRM Maj Statut Demande": {
+      "main": [
+        [
+          { "node": "Respond Succès", "type": "main", "index": 0 },
+          { "node": "Calcul Délai Relance", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Calcul Délai Relance": {
+      "main": [
+        [
+          { "node": "Attente Relance", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Attente Relance": {
+      "main": [
+        [
+          { "node": "HTTP Request1", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "CRM Demande Complexe": {
+      "main": [
+        [
+          { "node": "HTTP Request2", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "HTTP Request2": {
+      "main": [
+        [
+          { "node": "Respond Cas Complexe", "type": "main", "index": 0 }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    { "name": "NeoTravel" },
+    { "name": "Production" }
+  ],
+  "triggerCount": 1
+}
