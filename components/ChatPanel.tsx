@@ -241,9 +241,9 @@ function Bubble({ m }: { m: Msg }) {
             <span style={{ fontWeight: 700, fontSize: "var(--text-sm)", textTransform: "uppercase", letterSpacing: ".02em" }}>Total TTC</span>
             <span className="nt-num" style={{ fontWeight: 900, fontSize: "var(--text-2xl)", color: "var(--accent)", lineHeight: 0.82 }}>{m.ttc}</span>
           </div>
-          //<Link href="/devis" className="nt-btn" style={{ display: "block", marginTop: 11, background: "var(--surface)", border: "1px solid var(--line)", color: "var(--ink)", textAlign: "center", padding: 11, borderRadius: 99, fontSize: "var(--text-sm)", fontWeight: 700, textDecoration: "none" }}>
-          //  Ouvrir dans le simulateur →
-          //</Link>
+          {/* <Link href="/devis" className="nt-btn" style={{ display: "block", marginTop: 11, background: "var(--surface)", border: "1px solid var(--line)", color: "var(--ink)", textAlign: "center", padding: 11, borderRadius: 99, fontSize: "var(--text-sm)", fontWeight: 700, textDecoration: "none" }}>
+            Ouvrir dans le simulateur →
+          </Link> */}
           <div style={{ fontFamily: mono, fontSize: "var(--text-2xs)", fontWeight: 500, color: "var(--muted)", marginTop: 10, textAlign: "center" }}>
             calculé par le moteur, identique au simulateur
           </div>
