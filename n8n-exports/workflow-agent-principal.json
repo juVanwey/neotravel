@@ -277,6 +277,17 @@
               "removed": false
             },
             {
+              "id": "Date trajet retour",
+              "displayName": "Date trajet retour",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
               "id": "Nombre de passagers",
               "displayName": "Nombre de passagers",
               "required": false,
@@ -329,16 +340,8 @@
               "type": "options",
               "options": [
                 {
-                  "name": "Nouveau lead",
-                  "value": "Nouveau lead"
-                },
-                {
                   "name": "Incomplet",
                   "value": "Incomplet"
-                },
-                {
-                  "name": "Qualifié",
-                  "value": "Qualifié"
                 },
                 {
                   "name": "Devis envoyé",
@@ -420,6 +423,17 @@
               "canBeUsedToMatch": true,
               "display": true,
               "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Devis lié",
+              "displayName": "Devis lié",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
               "readOnly": false,
               "removed": false
             }
@@ -803,15 +817,16 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "Nom / Société": "={{ $json.donnees ? $json.donnees.nom_societe : 'Inconnu' }}",
-            "Email": "={{ $json.donnees ? $json.donnees.email : '' }}",
-            "Téléphone": "={{ $json.donnees ? $json.donnees.telephone : '' }}",
-            "Ville de départ": "={{ $json.donnees ? $json.donnees.ville_depart : '' }}",
-            "Ville d'arrivée": "={{ $json.donnees ? $json.donnees.ville_arrivee : '' }}",
-            "Nombre de passagers": "={{ $json.donnees ? $json.donnees.nb_passagers : 0 }}",
-            "Distance km": "={{ $json.donnees ? $json.donnees.distance_km : 0 }}",
+            "Nom / Société": "={{ $node[\"Code\"].json.donnees.nom_societe }}",
+            "Email": "={{ $node[\"Code\"].json.donnees.email }}",
+            "Téléphone": "={{ $node[\"Code\"].json.donnees.telephone }}",
+            "Ville de départ": "={{ $node[\"Code\"].json.donnees.ville_depart }}",
+            "Ville d'arrivée": "={{ $node[\"Code\"].json.donnees.ville_arrivee }}",
+            "Nombre de passagers": "={{ $node[\"Code\"].json.donnees.nb_passagers }}",
+            "Distance km": "={{ $node[\"Code\"].json.donnees.distance_km }}",
             "Statut": "Cas complexe",
-            "Commentaire libre": "={{ ($json.raison || '') + ' — ' + ($json.resume || '') }}"
+            "Commentaire libre": "={{ ($json.raison || '') + ' — ' + ($json.resume || '') }}",
+            "Date de la demande": "={{ new Date().toISOString() }}"
           },
           "matchingColumns": [],
           "schema": [
@@ -871,6 +886,28 @@
               "removed": false
             },
             {
+              "id": "Date trajet aller",
+              "displayName": "Date trajet aller",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date trajet retour",
+              "displayName": "Date trajet retour",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
               "id": "Nombre de passagers",
               "displayName": "Nombre de passagers",
               "required": false,
@@ -893,6 +930,27 @@
               "removed": false
             },
             {
+              "id": "Type de trajet",
+              "displayName": "Type de trajet",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Aller simple",
+                  "value": "Aller simple"
+                },
+                {
+                  "name": "Aller/Retour",
+                  "value": "Aller/Retour"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
               "id": "Statut",
               "displayName": "Statut",
               "required": false,
@@ -902,10 +960,78 @@
               "type": "options",
               "options": [
                 {
+                  "name": "Incomplet",
+                  "value": "Incomplet"
+                },
+                {
+                  "name": "Devis envoyé",
+                  "value": "Devis envoyé"
+                },
+                {
+                  "name": "Relance 1",
+                  "value": "Relance 1"
+                },
+                {
+                  "name": "Relance 2",
+                  "value": "Relance 2"
+                },
+                {
+                  "name": "Accepté",
+                  "value": "Accepté"
+                },
+                {
+                  "name": "Refusé",
+                  "value": "Refusé"
+                },
+                {
                   "name": "Cas complexe",
                   "value": "Cas complexe"
+                },
+                {
+                  "name": "Clôturé",
+                  "value": "Clôturé"
                 }
               ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Urgence",
+              "displayName": "Urgence",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "DD_PRIORITAIRE",
+                  "value": "DD_PRIORITAIRE"
+                },
+                {
+                  "name": "DD_URGENT",
+                  "value": "DD_URGENT"
+                },
+                {
+                  "name": "DD_NORMAL",
+                  "value": "DD_NORMAL"
+                },
+                {
+                  "name": "DD_3MOISETPLUS",
+                  "value": "DD_3MOISETPLUS"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date de la demande",
+              "displayName": "Date de la demande",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
               "readOnly": false,
               "removed": false
             },
@@ -917,6 +1043,17 @@
               "canBeUsedToMatch": true,
               "display": true,
               "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Devis lié",
+              "displayName": "Devis lié",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
               "readOnly": false,
               "removed": false
             }
@@ -998,10 +1135,16 @@
         "columns": {
           "mappingMode": "defineBelow",
           "value": {
-            "Nom / Société": "={{ $json.donnees ? $json.donnees.nom_societe : 'Inconnu' }}",
-            "Email": "={{ $json.donnees ? $json.donnees.email : '' }}",
+            "Nom / Société": "={{ $node[\"Code\"].json.donnees.nom_societe }}",
+            "Email": "={{ $node[\"Code\"].json.donnees.email }}",
             "Statut": "Incomplet",
-            "Commentaire libre": "={{ 'Escalade abandon — ' + $json.raison + '. Ce qui a été collecté : ' + $json.resume }}"
+            "Commentaire libre": "={{ 'Escalade abandon — ' + $json.raison + '. Ce qui a été collecté : ' + $json.resume }}",
+            "Distance km": "={{ $node[\"Code\"].json.donnees.distance_km }}",
+            "Nombre de passagers": "={{ $node[\"Code\"].json.donnees.nb_passagers }}",
+            "Date de la demande": "={{ new Date().toISOString() }}",
+            "Téléphone": "={{ $node[\"Code\"].json.donnees.telephone }}",
+            "Ville de départ": "={{ $node[\"Code\"].json.donnees.ville_depart }}",
+            "Ville d'arrivée": "={{ $node[\"Code\"].json.donnees.ville_arrivee }}"
           },
           "matchingColumns": [],
           "schema": [
@@ -1028,6 +1171,104 @@
               "removed": false
             },
             {
+              "id": "Téléphone",
+              "displayName": "Téléphone",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Ville de départ",
+              "displayName": "Ville de départ",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Ville d'arrivée",
+              "displayName": "Ville d'arrivée",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date trajet aller",
+              "displayName": "Date trajet aller",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date trajet retour",
+              "displayName": "Date trajet retour",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Nombre de passagers",
+              "displayName": "Nombre de passagers",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Distance km",
+              "displayName": "Distance km",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "number",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Type de trajet",
+              "displayName": "Type de trajet",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "Aller simple",
+                  "value": "Aller simple"
+                },
+                {
+                  "name": "Aller/Retour",
+                  "value": "Aller/Retour"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
               "id": "Statut",
               "displayName": "Statut",
               "required": false,
@@ -1039,8 +1280,76 @@
                 {
                   "name": "Incomplet",
                   "value": "Incomplet"
+                },
+                {
+                  "name": "Devis envoyé",
+                  "value": "Devis envoyé"
+                },
+                {
+                  "name": "Relance 1",
+                  "value": "Relance 1"
+                },
+                {
+                  "name": "Relance 2",
+                  "value": "Relance 2"
+                },
+                {
+                  "name": "Accepté",
+                  "value": "Accepté"
+                },
+                {
+                  "name": "Refusé",
+                  "value": "Refusé"
+                },
+                {
+                  "name": "Cas complexe",
+                  "value": "Cas complexe"
+                },
+                {
+                  "name": "Clôturé",
+                  "value": "Clôturé"
                 }
               ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Urgence",
+              "displayName": "Urgence",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "options",
+              "options": [
+                {
+                  "name": "DD_PRIORITAIRE",
+                  "value": "DD_PRIORITAIRE"
+                },
+                {
+                  "name": "DD_URGENT",
+                  "value": "DD_URGENT"
+                },
+                {
+                  "name": "DD_NORMAL",
+                  "value": "DD_NORMAL"
+                },
+                {
+                  "name": "DD_3MOISETPLUS",
+                  "value": "DD_3MOISETPLUS"
+                }
+              ],
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Date de la demande",
+              "displayName": "Date de la demande",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "dateTime",
               "readOnly": false,
               "removed": false
             },
@@ -1052,6 +1361,17 @@
               "canBeUsedToMatch": true,
               "display": true,
               "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "Devis lié",
+              "displayName": "Devis lié",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "array",
               "readOnly": false,
               "removed": false
             }
@@ -1138,7 +1458,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const output = $json.output;\ntry {\n  const cleaned = output.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n  const parsed = JSON.parse(cleaned);\n  if (parsed.donnees) {\n    const today = new Date();\n    // Force la date_demande à aujourd'hui\n    parsed.donnees.date_demande = today.toISOString().split('T')[0];\n    // Corrige l'année de date_depart si incorrecte\n    if (parsed.donnees.date_depart) {\n      const dateDepart = new Date(parsed.donnees.date_depart);\n      // Si la date est dans le passé, corrige l'année\n      if (dateDepart < today) {\n        dateDepart.setFullYear(today.getFullYear());\n        // Si encore dans le passé, passe à l'année suivante\n        if (dateDepart < today) {\n          dateDepart.setFullYear(today.getFullYear() + 1);\n        }\n        parsed.donnees.date_depart = dateDepart.toISOString().split('T')[0];\n      }\n      // Recalcule l'urgence avec la date corrigée\n      const diffJours = Math.floor((dateDepart - today) / (1000 * 60 * 60 * 24));\n      if (diffJours < 2) parsed.donnees.urgence = 'DD_PRIORITAIRE';\n      else if (diffJours < 7) parsed.donnees.urgence = 'DD_URGENT';\n      else if (diffJours < 90) parsed.donnees.urgence = 'DD_NORMAL';\n      else parsed.donnees.urgence = 'DD_3MOISETPLUS';\n    }\n  }\n  return parsed;\n} catch(e) {\n  return { statut: \"incomplet\", message: output };\n}"
+        "jsCode": "const output = $json.output;\ntry {\n  // Extrait le JSON même s'il y a du texte autour\n  const jsonMatch = output.match(/\\{[\\s\\S]*\\}/);\n  if (!jsonMatch) throw new Error(\"Pas de JSON trouvé\");\n  const parsed = JSON.parse(jsonMatch[0].trim());\n  if (parsed.donnees) {\n    const today = new Date();\n    today.setHours(0, 0, 0, 0);\n    // Force la date_demande à aujourd'hui\n    parsed.donnees.date_demande = today.toISOString().split('T')[0];\n    // Validation date_depart : si dans le passé, redemande\n    if (parsed.donnees.date_depart) {\n      const dateDepart = new Date(parsed.donnees.date_depart);\n      if (dateDepart < today) {\n        return {\n          statut: \"incomplet\",\n          champs_manquants: [\"date_depart\"],\n          message: \"La date de départ que vous avez indiquée est déjà passée. Pourriez-vous me donner une date future ?\"\n        };\n      }\n      // Recalcule l'urgence avec la date validée\n      const diffJours = Math.floor((dateDepart - today) / (1000 * 60 * 60 * 24));\n      if (diffJours < 2) parsed.donnees.urgence = 'DD_PRIORITAIRE';\n      else if (diffJours < 7) parsed.donnees.urgence = 'DD_URGENT';\n      else if (diffJours < 90) parsed.donnees.urgence = 'DD_NORMAL';\n      else parsed.donnees.urgence = 'DD_3MOISETPLUS';\n    }\n  }\n  return parsed;\n} catch(e) {\n  return { statut: \"incomplet\", message: output };\n}"
       },
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -3043,13 +3363,13 @@
       ]
     }
   },
-  "active": false,
+  "active": true,
   "settings": {
     "executionOrder": "v1",
     "binaryMode": "separate",
     "availableInMCP": false
   },
-  "versionId": "f010cfc6-df7b-4791-b793-48a13b88f9dc",
+  "versionId": "dfe86c85-bb32-4f8b-8550-9f324cb5c338",
   "meta": {
     "templateCredsSetupCompleted": true,
     "instanceId": "0706cde6282beec2a1e6bf78e848119b9e784c457b1bbf4594286dce4a8021fd"
