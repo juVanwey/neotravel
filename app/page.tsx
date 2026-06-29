@@ -1,65 +1,91 @@
-import Image from "next/image";
+import Link from "next/link";
+import { LandingChat } from "@/components/LandingChat";
+const wrap: React.CSSProperties = { width: "min(1160px,100%)", margin: "0 auto" };
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div>
+      {/* HERO */}
+      <section
+        className="nt-rise"
+        style={{
+          ...wrap,
+          padding: "clamp(40px,6vw,72px) clamp(16px,4vw,40px) clamp(40px,5vw,60px)",
+          position: "relative",
+        }}
+      >
+        <div
+          className="nt-r-sm"
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 8,
+            background: "var(--accent)",
+            color: "var(--navy)",
+            padding: "8px 13px",
+            fontSize: "var(--text-xs)",
+            fontWeight: 800,
+            textTransform: "uppercase",
+            letterSpacing: ".03em",
+            marginBottom: 24,
+          }}
+        >
+          ▲ Prix 100% déterministe
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        <h1
+          style={{
+            fontWeight: 800,
+            fontSize: "clamp(34px,6.2vw,66px)",
+            lineHeight: 0.98,
+            letterSpacing: "-.02em",
+            textTransform: "uppercase",
+            margin: "0 0 22px",
+            maxWidth: 880,
+          }}
+        >
+          Le prix de votre car,{" "}
+          <span
+            style={{
+              background: "var(--accent)",
+              color: "var(--navy)",
+              padding: "0 8px",
+              boxDecorationBreak: "clone",
+              WebkitBoxDecorationBreak: "clone",
+            }}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+            calculé devant vous.
+          </span>
+        </h1>
+
+        <p
+          style={{
+            fontSize: "clamp(15px,2vw,18px)",
+            lineHeight: 1.5,
+            maxWidth: 680,
+            margin: "0 0 28px",
+            color: "var(--muted)",
+            fontWeight: 500,
+          }}
+        >
+          Décrivez votre besoin en une phrase : l&apos;assistant qualifie la demande et coche les
+          informations au fil de l&apos;échange. Aucune IA ne fixe le prix, il reste 100 %
+          déterministe.
+        </p>
+
+        <LandingChat />
+
+        <p style={{ fontSize: "var(--text-sm)", color: "var(--muted)", marginTop: 16 }}>
+          Vous préférez les détails ?{" "}
+          <Link
+            href="/devis"
+            style={{ color: "var(--ink)", fontWeight: 700, textDecoration: "underline", textDecorationColor: "var(--accent)", textUnderlineOffset: 3 }}
           >
-            Documentation
-          </a>
-        </div>
-      </main>
+            Ouvrir le simulateur →
+          </Link>
+        </p>
+      </section>
+
     </div>
   );
 }
