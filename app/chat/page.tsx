@@ -14,7 +14,7 @@ const wrap: React.CSSProperties = { width: "min(1160px,100%)", margin: "0 auto" 
 const PRINCIPES = [
   ["Déterministe", "Une seule formule. Mêmes informations en entrée, même prix en sortie, pour tout le monde."],
   ["Sans IA dans le prix", "L'assistant qualifie et reformule, mais ne fixe jamais un tarif. Le calcul reste une fonction auditée."],
-  ["Transparent", "Chaque devis s'explique ligne par ligne : base, marge, saison, urgence, capacité, options."],
+  ["Transparent", "Chaque devis s'explique ligne par ligne : trajet, saison, urgence, capacité, options et TVA."],
 ];
 
 const ETAPES = [

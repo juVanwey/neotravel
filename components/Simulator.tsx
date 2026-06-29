@@ -82,6 +82,10 @@ function processDevis(data: {
       running += l.montant;
     }
 
+    // La marge commerciale reste prise en compte dans le moteur de calcul,
+    // mais elle n'est pas affichée au client dans le devis détaillé.
+    if (/Marge commerciale/i.test(lib)) continue;
+
     const [label, sub] = splitLib(lib);
     const row: Row = { key: lib, label, sub, delta: fmtSigned(delta), running: fmt(running), isBase: !isOpt && core.length === 0 };
     (isOpt ? options : core).push(row);
@@ -198,7 +202,7 @@ export function Simulator() {
         </div>
         <span className="nt-noprint" style={{ fontFamily: mono, fontSize: "var(--text-xs)", color: "var(--muted)", display: "flex", alignItems: "center", gap: 7 }}>
           <span style={{ width: 8, height: 8, borderRadius: "50%", background: pending ? "var(--warn)" : "var(--ok)", animation: "nt-blink 1.4s infinite" }} />
-          {pending ? "RECALCUL…" : "MOTEUR /api/devis · EN DIRECT"}
+          {pending ? "RECALCUL…" : "CALCUL EN DIRECT"}
         </span>
       </div>
 
