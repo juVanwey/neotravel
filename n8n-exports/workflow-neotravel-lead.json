@@ -1,0 +1,242 @@
+{
+  "name": "NeoTravel — Lead → Devis → CRM → Email",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "neotravel-lead",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [250, 300],
+      "id": "node-webhook",
+      "name": "Webhook NeoTravel Lead",
+      "webhookId": "neotravel-lead"
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "Tu es l'assistant commercial de NeoTravel. Tu analyses les demandes prospects et extrais les informations en JSON. Champs obligatoires : nom_societe, email, telephone, ville_depart, ville_arrivee, date_depart (YYYY-MM-DD), nb_passagers (entier), distance_km (entier), aller_retour (boolean), urgence (DD_PRIORITAIRE/DD_URGENT/DD_NORMAL/DD_3MOISETPLUS). Si champ manquant : {statut: incomplet, champs_manquants: [...]}. Si complet : {statut: complet, données: {...}}. Tu ne calcules JAMAIS un prix."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [500, 300],
+      "id": "node-ai-agent",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "condition-statut",
+              "leftValue": "={{ $json.statut }}",
+              "rightValue": "complet",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [750, 300],
+      "id": "node-if-complet",
+      "name": "Si statut complet"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: false, message: \"Informations manquantes. Merci de compléter votre demande.\", champs_manquants: $json.champs_manquants }) }}",
+        "options": {
+          "responseCode": 422
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1000, 500],
+      "id": "node-respond-incomplet",
+      "name": "Respond Incomplet"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://neotravel.vercel.app/api/devis",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($node[\"AI Agent\"].json.données) }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1000, 200],
+      "id": "node-http-devis",
+      "name": "Calculer Devis"
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "base": {
+          "__rl": true,
+          "value": "appGGAlQWuG2wb5kd",
+          "mode": "id"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblZivQRw7GW1jawF",
+          "mode": "id"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {}
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtable",
+      "typeVersion": 2.1,
+      "position": [1250, 200],
+      "id": "node-airtable",
+      "name": "Airtable CRM"
+    },
+    {
+      "parameters": {
+        "fromEmail": "devis@neotravel.fr",
+        "toEmail": "={{ $node[\"AI Agent\"].json.données.email }}",
+        "subject": "Votre devis NeoTravel — {{ $node[\"AI Agent\"].json.données.nom_societe }}",
+        "html": "<h2>Bonjour,</h2><p>Merci pour votre demande. Voici votre devis :</p><ul><li><strong>Trajet :</strong> {{ $node[\"AI Agent\"].json.données.ville_depart }} → {{ $node[\"AI Agent\"].json.données.ville_arrivee }}</li><li><strong>Date :</strong> {{ $node[\"AI Agent\"].json.données.date_depart }}</li><li><strong>Passagers :</strong> {{ $node[\"AI Agent\"].json.données.nb_passagers }}</li><li><strong>Prix HT :</strong> {{ $node[\"Calculer Devis\"].json.prix_ht }} €</li><li><strong>TVA :</strong> {{ $node[\"Calculer Devis\"].json.tva }} €</li><li><strong>Prix TTC :</strong> {{ $node[\"Calculer Devis\"].json.prix_ttc }} €</li></ul><p>À bientôt,<br/>L'équipe NeoTravel</p>"
+      },
+      "type": "n8n-nodes-base.resend",
+      "typeVersion": 1,
+      "position": [1500, 200],
+      "id": "node-resend-email",
+      "name": "Envoyer Devis Email",
+      "credentials": {
+        "resendApi": {
+          "id": "REMPLACER_PAR_CREDENTIAL_ID",
+          "name": "Resend API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ JSON.stringify({ success: true, message: \"Devis envoyé avec succès.\", prix_ht: $node[\"Calculer Devis\"].json.prix_ht, prix_ttc: $node[\"Calculer Devis\"].json.prix_ttc }) }}",
+        "options": {
+          "responseCode": 200
+        }
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1750, 200],
+      "id": "node-respond-succes",
+      "name": "Respond Succès"
+    }
+  ],
+  "connections": {
+    "Webhook NeoTravel Lead": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Si statut complet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Si statut complet": {
+      "main": [
+        [
+          {
+            "node": "Calculer Devis",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond Incomplet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculer Devis": {
+      "main": [
+        [
+          {
+            "node": "Airtable CRM",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Airtable CRM": {
+      "main": [
+        [
+          {
+            "node": "Envoyer Devis Email",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Envoyer Devis Email": {
+      "main": [
+        [
+          {
+            "node": "Respond Succès",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": [
+    {
+      "name": "NeoTravel"
+    }
+  ],
+  "triggerCount": 1
+}
